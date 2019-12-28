@@ -1,0 +1,44 @@
+void setColorByValue(int value, int threshold1, int threshold2, int threshold3)
+{
+  if (value < 0)
+    value = -value;
+  if (value < threshold1)
+  {
+    lcd.setColor(RGB16_WHITE);
+  }
+  else if (value < threshold2)
+  {
+    byte n = (uint32_t)(threshold2 - value) * 255 / (threshold2 - threshold1);
+    lcd.setColor(255, 255, n);
+  }
+  else if (value < threshold3)
+  {
+    byte n = (uint32_t)(threshold3 - value) * 255 / (threshold3 - threshold2);
+    lcd.setColor(255, n, 0);
+  }
+  else
+  {
+    lcd.setColor(255, 0, 0);
+  }
+}
+
+void showPIDData(byte pid, int value)
+{
+  char buf[8];
+  switch (pid)
+  {
+    case PID_RPM:
+      if (value <= 10000)
+      setColorByValue(value, 2500, 3500, 5000);
+      lcd.printInt(value, 4);
+      break;
+
+    case PID_SPEED:
+      if (value < 1000)
+      {
+        setColorByValue(value, 50, 90, 140);
+        lcd.printInt(value, 3);
+        break;
+      }
+
+  }

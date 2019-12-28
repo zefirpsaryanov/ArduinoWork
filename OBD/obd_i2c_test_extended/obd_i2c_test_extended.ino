@@ -18,7 +18,7 @@ void reconnect()
     {
       lcd.clear();
     }
-    delay(1000);
+    delay(500);
   }
 }
 
@@ -32,13 +32,13 @@ void showData(byte pid, int value)
 
     case PID_SPEED:
       lcd.setCursor(0, 0);
-      lcd.printInt(value, 3);
-      speedTMP = value;
+      lcd.printInt((unsigned int)value % 1000, 3);
+      speedTMP = (unsigned int)value % 1000;
       break;
 
     case PID_RPM:
-      lcd.setCursor(40, 0);
-      lcd.printInt(value, 4);
+      lcd.setCursor(33, 0);
+      lcd.printInt((unsigned int)value % 10000, 4);
       break;
 
     case PID_COOLANT_TEMP:
@@ -51,15 +51,15 @@ void showData(byte pid, int value)
       lcd.printInt((double)value * 0.8, 2);
       break;
 
-    //---------------------------------------//
+    /*---------------------------------------*/
 
     case PID_RUNTIME:
       lcd.setCursor(0, 3);
-      lcd.printInt(value / 60, 3); // /60 mins
+      lcd.printInt(value / 60, 2); // /60 mins
       break;
 
     case PID_DISTANCE_WITH_MIL:
-      lcd.setCursor(40, 3);
+      lcd.setCursor(33, 3);
       lcd.printInt((double)distance / 60000, 3);
       break;
 
@@ -80,26 +80,23 @@ void initScreen()
   lcd.clear();
   lcd.setFontSize(FONT_SIZE_SMALL);
 
-  lcd.setCursor(0, 2);
+  lcd.setCursor(2, 2);
   lcd.print("KM/H");
-  lcd.setCursor(33, 2);
+  lcd.setCursor(40, 2);
   lcd.print("RPM");
   lcd.setCursor(70, 2);
   lcd.print("WATER");
   lcd.setCursor(105, 2);
   lcd.print("FUEL");
 
-
-  lcd.setCursor(2, 5);
+  lcd.setCursor(5, 5);
   lcd.print("RUN");
-  lcd.setCursor(30, 5);
+  lcd.setCursor(38, 5);
   lcd.print("DIST");
   lcd.setCursor(70, 5);
   lcd.print("VOLTS");
   lcd.setCursor(107, 5);
   lcd.print("AMB");
-
-
 }
 
 void setup()
@@ -137,7 +134,7 @@ void showVIN()
   else
   {
     lcd.setCursor(24, 7);
-    lcd.print(" Can`t read VIN");
+    lcd.print(" Can`t get VIN");
   }
 }
 

@@ -1,0 +1,125 @@
+
+
+//MAterials Arduino MEGA 
+//Sparkfun Serial LCD KIT
+//ELM327 wired one...But you can use a bluetooth one then this serial must be with bluethooth device
+//ATDP DESCRIBE CURRENT PROTOCOL
+// ATE(0,1) echo(on,off)
+
+String Str;
+
+int check;
+void setup()
+{
+  Serial.begin(9600);
+  Serial.println("Start");    //This serial monitor see what's UP
+  
+  Serial1.begin(9600);
+  Serial1.print("ATZ\r");  // This Serial hooked with ELM327 (I wish to get here higher baund)
+  delay(1000);
+  Serial1.print("ATE0\r");  //Echo off
+  delay(50);
+  
+  
+  Serial3.begin(115200);       //This one is LCD
+  //Str = Serial1.readString();       // Everything what ELM answers we got in the String Str
+             
+}
+
+void loop()
+{
+               Serial1.setTimeout(1000);            //We need here slow down or ELM sends garbage 
+               Serial1.flush();                    // Yes I want it here
+               
+               Serial1.print("010C\r");            // First RPM PID
+               
+               Str = Serial1.readString();         //LOvely function. Getting respond
+              
+               
+               Serial.println(Str);              //This one for debug you know
+
+             
+               check = 1;  // 3rd IF reset
+
+  if (Str.startsWith("SEARCHING"))  //When you first power up the system, ELM automatically scans for car protocols(aftr a RPM PID) when its doing that its answers with Searching word
+                                    // Sending PID wait for an answer... This must be improve though by Searching for pratfall function first and then actually sending a target PID
+  {
+  
+
+     Serial3.write(0xFE);           //Needed for LCD
+     Serial3.write(0x01);
+     Serial3.print("Serching");
+     
+     Serial1.print("010C\r");
+     
+     Serial.println("IF1");
+     delay(3500);                     //We need this delay for ELM find and hook the right protocol when ing ON
+  }
+    
+  
+  if (Str.startsWith("NO"))
+  {
+     
+     Serial3.write(0xFE);
+     Serial3.write(0x01);            // When ELM actually knows the car protocol but can't obtain data from it because ignition  is off.
+     Serial3.print("NO DATA");
+     Serial3.print(" ");
+     Serial3.print("ING OFF");
+     
+     Serial1.print("010C\r");
+     
+     Serial.println("IF2");
+     delay(3500);
+  }
+    
+    
+   if (Str.startsWith("41"))                       
+   {
+         Serial.println("IF Suka 3");
+         delay(3500);                            //debug
+        
+         
+          while(check == 1)
+          
+                 {
+                     Serial1.setTimeout(90);                     //Speed up the process!!!... You can't get it lower i guess... 
+                                                                // The  baund rate on this port may can help to get faster respond from ELM
+            
+                     Str = Serial1.readString();              //Calling aggain with diferent speed..
+                     
+                     Serial1.print("010C\r");
+                     Serial.println("While");
+                     Serial.println(Str);
+                     String A = Str.substring(6,8);       //It is was pain to get it right... Cause STRTOL you can specify the begining of string but not the end or I don't get it. so that's way in to 2 Strings
+                     String B = Str.substring(9,11);      
+                     Serial.println(A);
+                     Serial.println(B);
+
+                       //((A*256)+B)/4
+                      int long Ch = ((strtol(&A[0], 0, 16) * 256) + strtol(&B[0], 0, 16)) / 4;     //The magic formula what gets actual DEC number of HEX answer
+
+
+                     if (Str.startsWith("STOPPED"))
+                             { 
+                              Serial1.print("ATZ\r");
+                              delay(1000);
+                              Serial.println(Serial1.read());           //Getting away from while loop if Ignition Off and reastarting ELM at the same time
+                                                        
+                              check = 0;
+                            }                                                 
+
+                     Serial3.write(0xFE);
+                     Serial3.write(0x01);              //reset LCD and Put  the cursor to the TOP left position
+                     Serial3.write(0x0D);               //Put the cursor to the beginnig of second rol
+
+
+                     Serial3.print(Ch);
+                     Serial3.print(" Rpm");
+                     
+                 }
+                    
+  }
+}
+
+//By Slavka85 /1.9.14/
+

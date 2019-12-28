@@ -1,0 +1,28 @@
+Connections
+
+HC05 will be the Master. ELM327 will be the Slave.
+
+Connect HC05 to 5v power and ground and to TX/RX pins of Arduino
+Programming
+
+Hold Button before power up to force HC05 into AT command mode.
+(Should blink on off every 2 seconds)
+
+Open Serial Monitor or Hyper terminal to COM Port
+My ELM327 Address is 12:3.4:56:78:9c:72 ( You need to find yours)
+
+My HC05 Address is 00:14:03:05:97:07 ( AT+ADDE? = +ADDR: 14:3:59707 ) no zeros ( Not really needed )
+
+AT Commands to set up HC05 to connect permanantly to ELM327
+
+AT+RESET
+AT+ORGL (Set to original)
+AT+ROLE=1 (Set to Master)
+AT+CMODE=0 (Set connect to a specific address)
+AT+BIND=1234,56,789c72
+AT+INIT (Need to connect)
+AT+PAIR=1234,56,789c72,20 (,20 means 20 second timeout)
+AT+LINK=1234,56,789c72
+Note:
+
+When programming Arduino remove HC05 connection from TX RX Pins of Arduino
