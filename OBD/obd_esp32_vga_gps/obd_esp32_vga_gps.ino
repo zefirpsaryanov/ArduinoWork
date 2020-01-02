@@ -1,26 +1,38 @@
 #include <Wire.h>
-#include <OBD.h>
-#include <TinyGPS++.h>
-#include <HardwareSerial.h>
+#include <OBD.h> // PIN 21 22
+#include <TinyGPS++.h> // com2 / uart2
+#include <HardwareSerial.h> // PIN 16 17
 #include <ESP32Lib.h>
 #include <Ressources/CodePage437_8x19.h>
 #include "opel.h"
 #include "combi.h"
+
+#define key1 15 //connect wire 4 to pin 15 --> 1
+#define key2 2  //connect wire 1 to pin  2 --> 2
+#define key3 0  //connect wire 3 to pin  0 --> 3
+#define key4 4  //connect wire 2 to pin  4 --> 4
 
 const int redPin = 14;
 const int greenPin = 19;
 const int bluePin = 27;
 const int hsyncPin = 32;
 const int vsyncPin = 33;
+const int w = tft.width();  // 240
+const int h = tft.height(); // 320
+const int clockCenterX = w / 2;
+const int clockCenterY = w / 2;
 
 //VGA Device
 VGA3Bit vga;
-
 COBDI2C obd;
+TinyGPSPlus gps;
+HardwareSerial SerialGPS(2);
+
 double speedTMP;
 double distance;
 double fuelRate;
 double fuelTMP;
+
 int RPM;
 int COOLANT;
 int RUNTIME;
@@ -28,8 +40,9 @@ int VOLTAGE;
 int AMBIENT_TEMP;
 
 
-TinyGPSPlus gps;
-HardwareSerial SerialGPS(2);
+
+
+
 
 /*
      0 -> black
@@ -62,6 +75,23 @@ HardwareSerial SerialGPS(2);
   vga.print("ellipse(x,y,rx,ry,c)");
   draw a filled ellipse
   vga.print("fillEllipse(x,y,rx,ry,c)");
+
+
+
+#define PID_RPM 0x0C
+#define PID_RUNTIME 0x1F
+#define PID_FUEL_LEVEL 0x2F
+#define PID_ENGINE_FUEL_RATE 0x5E
+
+#define PID_AMBIENT_TEMP 0x46
+#define PID_COOLANT_TEMP 0x05
+#define PID_ENGINE_OIL_TEMP 0x5C
+
+
+
+{PID_RPM, PID_RUNTIME, PID_FUEL_LEVEL, PID_ENGINE_FUEL_RATE, PID_CONTROL_MODULE_VOLTAGE, PID_AMBIENT_TEMP, PID_COOLANT_TEMP, PID_ENGINE_OIL_TEMP}
+
+  
 */
 
 
@@ -73,7 +103,7 @@ void showDTC()
   if (dtcCount == 0)
   {
     vga.setCursor(110, 130);
-    vga.println("DTC ERR:NO");
+    vga.print("DTC ERR:NO");
   }
   else
   {
@@ -85,26 +115,10 @@ void showDTC()
 
 void setColorByValue(int value1, int threshold1, int threshold2, int threshold3)
 {
-  if (value1 >= 0 && value1 < threshold1)
-  {
-    vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0));
-    // white
-  }
-  if (value1 >= threshold1 && value1 < threshold2)
-  {
-    vga.setTextColor(vga.RGB(255, 255, 0), vga.RGB(0, 0, 0));
-    // yellow
-  }
-  if (value1 >= threshold2 && value1 < threshold3)
-  {
-    vga.setTextColor(vga.RGB(0, 255, 0), vga.RGB(0, 0, 0));
-    // green
-  }
-  if (value1 >= threshold3)
-  {
-    vga.setTextColor(vga.RGB(255, 0, 0), vga.RGB(0, 0, 0));
-    // red
-  }
+  if (value1 >= 0 && value1 < threshold1) vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // white
+  if (value1 >= threshold1 && value1 < threshold2) vga.setTextColor(vga.RGB(255, 255, 0), vga.RGB(0, 0, 0)); // yellow
+  if (value1 >= threshold2 && value1 < threshold3) vga.setTextColor(vga.RGB(0, 255, 0), vga.RGB(0, 0, 0)); // green
+  if (value1 >= threshold3) vga.setTextColor(vga.RGB(255, 0, 0), vga.RGB(0, 0, 0)); // red
 }
 
 void circlesInfo()
@@ -122,6 +136,26 @@ void circlesInfo()
   vga.circle(149, 51, 49, 1);
   vga.fillCircle(149, 51, 5, 6);
 
+}
+
+void key1Func()
+{
+  // TO DO
+}
+
+void key2Func()
+{
+  // TO DO
+}
+
+void key3Func()
+{
+  // TO DO
+}
+
+void key4Func()
+{
+  // TO DO
 }
 
 void dashInfo()
@@ -214,7 +248,6 @@ void dashInfo()
   vga.print(AMBIENT_TEMP, 2);
 
   vga.rect(0, 0, 200, 96, 6);
-
 }
 
 void bottom()
@@ -295,37 +328,196 @@ void bottom()
   }
 }
 
+
+
+void oledDisp()
+{
+  // TO DO
+}
+
+
+
+void drawMainDisplay()
+{
+  vga.fillCircle(clockCenterX, clockCenterY, clockCenterX - 1, 6); // lite blue
+  vga.fillCircle(clockCenterX, clockCenterY, clockCenterX - 3, 0); // black
+  vga.fillCircle(clockCenterX, clockCenterY, 3, 1);                // red
+
+  vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // white
+  vga.setCursor(clockCenterX + 45, clockCenterY - 5); vga.print("3");
+  vga.setCursor(clockCenterX - 5, clockCenterY + 45); tft.print("6");
+  vga.setCursor(clockCenterX - 45, clockCenterY - 5); tft.print("9");
+  vga.setCursor(clockCenterX - 5, clockCenterY - 45); tft.print("12");
+
+  for (int i = 0; i < 12; i++)
+  {
+    if ((i % 3) != 0)
+      drawMark(i);
+  }
+}
+
+void drawMark(int h)
+{
+  float x1, y1, x2, y2;
+
+  h = h * 30;
+  h = h + 270;
+  x1 = 45 * cos(h * 0.0174532925);
+  y1 = 45 * sin(h * 0.0174532925);
+  x2 = 42 * cos(h * 0.0174532925);
+  y2 = 42 * sin(h * 0.0174532925);
+  
+  tft.line(x1 + clockCenterX, y1 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, 6);
+
+  float sx = 0, sy = 1;
+  uint16_t xx0 = 0, xx1 = 0, yy0 = 0, yy1 = 0;
+
+  for (int i = 0; i < 360; i += 6)
+  {
+    sx = cos((i - 90) * 0.0174532925);
+    sy = sin((i - 90) * 0.0174532925);
+    xx0 = sx * 102 + 120; //??
+    yy0 = sy * 102 + 120; //??
+    // Draw minute markers
+    vga.dot(xx0, yy0, 6);
+
+    // Draw main quadrant dots
+    //if(i==0 || i==180) tft.fillCircle(xx0, yy0, 2, ILI9341_CYAN);
+    //if(i==90 || i==270) tft.fillCircle(xx0, yy0, 2, ILI9341_CYAN);
+
+  }
+
+}
+
+void drawSec(int s)
+{
+  float x1, y1, x2, y2;
+  int ps = s - 1;
+  if (ps == -1)
+    ps = 59;
+  ps = ps * 6;
+  ps = ps + 270;
+  x1 = 95 * cos(ps * 0.0174532925);
+  y1 = 95 * sin(ps * 0.0174532925);
+  x2 = 5 * cos(ps * 0.0174532925);
+  y2 = 5 * sin(ps * 0.0174532925);
+  vga.line(x1 + clockCenterX, y1 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, 0);
+  s = s * 6;
+  s = s + 270;
+  x1 = 95 * cos(s * 0.0174532925);
+  y1 = 95 * sin(s * 0.0174532925);
+  x2 = 5 * cos(s * 0.0174532925);
+  y2 = 5 * sin(s * 0.0174532925);
+  vga.line(x1 + clockCenterX, y1 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, 7);
+}
+
+void drawMin(int m)
+{
+  float x1, y1, x2, y2, x3, y3, x4, y4;
+  int pm = m - 1;
+  int w = 5;
+  if (pm == -1)
+    pm = 59;
+  pm = pm * 6;
+  pm = pm + 270;
+  x1 = 80 * cos(pm * 0.0174532925);
+  y1 = 80 * sin(pm * 0.0174532925);
+  x2 = 5 * cos(pm * 0.0174532925);
+  y2 = 5 * sin(pm * 0.0174532925);
+  x3 = 30 * cos((pm + w) * 0.0174532925);
+  y3 = 30 * sin((pm + w) * 0.0174532925);
+  x4 = 30 * cos((pm - w) * 0.0174532925);
+  y4 = 30 * sin((pm - w) * 0.0174532925);
+  tft.drawLine(x1 + clockCenterX, y1 + clockCenterY, x3 + clockCenterX, y3 + clockCenterY, ILI9341_BLACK);
+  tft.drawLine(x3 + clockCenterX, y3 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, ILI9341_BLACK);
+  tft.drawLine(x2 + clockCenterX, y2 + clockCenterY, x4 + clockCenterX, y4 + clockCenterY, ILI9341_BLACK);
+  tft.drawLine(x4 + clockCenterX, y4 + clockCenterY, x1 + clockCenterX, y1 + clockCenterY, ILI9341_BLACK);
+  m = m * 6;
+  m = m + 270;
+  x1 = 80 * cos(m * 0.0174532925);
+  y1 = 80 * sin(m * 0.0174532925);
+  x2 =  5 * cos(m * 0.0174532925);
+  y2 =  5 * sin(m * 0.0174532925);
+  x3 = 30 * cos((m + w) * 0.0174532925);
+  y3 = 30 * sin((m + w) * 0.0174532925);
+  x4 = 30 * cos((m - w) * 0.0174532925);
+  y4 = 30 * sin((m - w) * 0.0174532925);
+  tft.drawLine(x1 + clockCenterX, y1 + clockCenterY, x3 + clockCenterX, y3 + clockCenterY, ILI9341_WHITE);
+  tft.drawLine(x3 + clockCenterX, y3 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, ILI9341_WHITE);
+  tft.drawLine(x2 + clockCenterX, y2 + clockCenterY, x4 + clockCenterX, y4 + clockCenterY, ILI9341_WHITE);
+  tft.drawLine(x4 + clockCenterX, y4 + clockCenterY, x1 + clockCenterX, y1 + clockCenterY, ILI9341_WHITE);
+}
+
+void drawHour(int h, int m)
+{
+  float x1, y1, x2, y2, x3, y3, x4, y4;
+  int ph = h;
+  int color = ILI9341_CYAN;
+  int w = 7;
+  if (m == 0) {
+    ph = ((ph - 1) * 30) + ((m + 59) / 2);
+  }
+  else {
+    ph = (ph * 30) + ((m - 1) / 2);
+  }
+  ph = ph + 270;
+  x1 = 60 * cos(ph * 0.0174532925);
+  y1 = 60 * sin(ph * 0.0174532925);
+  x2 = 5 * cos(ph * 0.0174532925);
+  y2 = 5 * sin(ph * 0.0174532925);
+  x3 = 20 * cos((ph + w) * 0.0174532925);
+  y3 = 20 * sin((ph + w) * 0.0174532925);
+  x4 = 20 * cos((ph - w) * 0.0174532925);
+  y4 = 20 * sin((ph - w) * 0.0174532925);
+  tft.drawLine(x1 + clockCenterX, y1 + clockCenterY, x3 + clockCenterX, y3 + clockCenterY, ILI9341_BLACK);
+  tft.drawLine(x3 + clockCenterX, y3 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, ILI9341_BLACK);
+  tft.drawLine(x2 + clockCenterX, y2 + clockCenterY, x4 + clockCenterX, y4 + clockCenterY, ILI9341_BLACK);
+  tft.drawLine(x4 + clockCenterX, y4 + clockCenterY, x1 + clockCenterX, y1 + clockCenterY, ILI9341_BLACK);
+  h = (h * 30) + (m / 2);
+  h = h + 270;
+  x1 = 60 * cos(h * 0.0174532925);
+  y1 = 60 * sin(h * 0.0174532925);
+  x2 = 5 * cos(h * 0.0174532925);
+  y2 = 5 * sin(h * 0.0174532925);
+  x3 = 20 * cos((h + w) * 0.0174532925);
+  y3 = 20 * sin((h + w) * 0.0174532925);
+  x4 = 20 * cos((h - w) * 0.0174532925);
+  y4 = 20 * sin((h - w) * 0.0174532925);
+  tft.drawLine(x1 + clockCenterX, y1 + clockCenterY, x3 + clockCenterX, y3 + clockCenterY, ILI9341_WHITE);
+  tft.drawLine(x3 + clockCenterX, y3 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, ILI9341_WHITE);
+  tft.drawLine(x2 + clockCenterX, y2 + clockCenterY, x4 + clockCenterX, y4 + clockCenterY, ILI9341_WHITE);
+  tft.drawLine(x4 + clockCenterX, y4 + clockCenterY, x1 + clockCenterX, y1 + clockCenterY, ILI9341_WHITE);
+}
+
+
+
 void setup()
 {
   Serial.begin(9600);
   SerialGPS.begin(9600, SERIAL_8N1, 17, 16);
+  
+  pinMode(key1, INPUT_PULLUP);// set pin as input
+  pinMode(key2, INPUT_PULLUP);// set pin as input
+  pinMode(key3, INPUT_PULLUP);// set pin as input
+  pinMode(key4, INPUT_PULLUP);// set pin as input
+  
+  //obd.begin();
+  
   vga.setFrameBufferCount(2);
   vga.init(vga.MODE200x150, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
-
   vga.setFont(CodePage437_8x19);
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-
   sprites.draw(vga, (millis() / 50) % 20, vga.xres / 2, vga.yres / 2);
   //combi.draw(vga, (millis() / 50) % 20, vga.xres / 2, vga.yres / 2);
   delay(5000);
   vga.clear();
 
-  vga.setCursor(40, 65);
-  vga.print("WELCOME TO OPEL");
-
-  delay(1000);
-  //obd.begin();
-
-  vga.setCursor(55, 80);
-  vga.print("Connecting...");
-  delay(1000);
   //while (!obd.init());
+
   vga.clear();
 
   bottom();
-  //circlesInfo();
   showDTC();
-
 }
 
 void reconnect()
@@ -349,11 +541,11 @@ void readData(byte pid, int value)
   switch (pid)
   {
     case PID_RPM:
-      if (value < 8000) RPM = value;
+      if (value < 9000) RPM = value;
       break;
 
     case PID_COOLANT_TEMP:
-      if (value < 130) COOLANT = value;
+      if (value < 200) COOLANT = value;
       break;
 
     case PID_ENGINE_FUEL_RATE:
@@ -374,7 +566,7 @@ void readData(byte pid, int value)
   }
 }
 
-void debugInfo()
+void debugInfo() // GPS Debug Info
 {
   Serial.print(F("Sat`s: "));
   if (gps.satellites.isValid()) Serial.print(gps.satellites.value());
@@ -452,16 +644,23 @@ void debugInfo()
 
 void loop()
 {
-  // This sketch displays information every time a new sentence is correctly encoded.
+  int key1S = digitalRead(key1); // read if key1 is pressed
+  int key2S = digitalRead(key2); // read if key2 is pressed
+  int key3S = digitalRead(key3); // read if key3 is pressed
+  int key4S = digitalRead(key4); // read if key4 is pressed
+
+  if (!key1S) key1Funk();
+  if (!key2S) key2Funk();
+  if (!key3S) key3Funk();
+  if (!key4S) key4Funk();
+  
   while (SerialGPS.available() > 0)
     if (gps.encode(SerialGPS.read()))
     {
       distance += gps.speed.kmph();
       debugInfo();
-      //circlesInfo();
       dashInfo();
       bottom();
-
     }
 
   if (millis() > 5000 && gps.charsProcessed() < 10)
@@ -469,20 +668,20 @@ void loop()
     Serial.println(F("No GPS detected: check wiring."));
     while (true);
   }
-      static byte pids[] = {PID_RPM, PID_COOLANT_TEMP, PID_ENGINE_FUEL_RATE, PID_RUNTIME, PID_CONTROL_MODULE_VOLTAGE, PID_AMBIENT_TEMP};
-      static byte index = 0;
-      byte pid = pids[index];
-      int value;
-      // send a query to OBD adapter for specified OBD-II pid
-      if (obd.readPID(pid, value))
-      {
-        readData(pid, value);
-      }
-      index = (index + 1) % sizeof(pids);
-  
-      if (obd.errors >= 100)
-      {
-        reconnect();
-        setup();
-      }
+  static byte pids[] = {PID_RPM, PID_COOLANT_TEMP, PID_ENGINE_FUEL_RATE, PID_RUNTIME, PID_CONTROL_MODULE_VOLTAGE, PID_AMBIENT_TEMP};
+  static byte index = 0;
+  byte pid = pids[index];
+  int value;
+  // send a query to OBD adapter for specified OBD-II pid
+  if (obd.readPID(pid, value))
+  {
+    readData(pid, value);
+  }
+  index = (index + 1) % sizeof(pids);
+
+  if (obd.errors >= 100)
+  {
+    reconnect();
+    setup();
+  }
 }

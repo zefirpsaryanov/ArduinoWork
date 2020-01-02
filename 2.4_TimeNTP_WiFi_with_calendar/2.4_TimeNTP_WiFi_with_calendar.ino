@@ -6,7 +6,6 @@
 #include <Adafruit_ILI9341.h>
 #include <XPT2046_Touchscreen.h>
 
-
 #define TFT_CS 14  //for D32 Pro
 #define TFT_DC 27  //for D32 Pro
 #define TFT_RST 33 //for D32 Pro
@@ -42,8 +41,8 @@ XPT2046_Touchscreen ts(TS_CS);
 //#define TFT_GREENYELLOW 0xAFE5  ///< 173, 255,  41
 //#define TFT_PINK        0xFC18  ///< 255, 130, 198
 
-const char ssid[] = "magicbox";
-const char pass[] = "013423944";
+const char ssid[] = "test";
+const char pass[] = "1q2w3e4r";
 
 static const char ntpServerName[] = "ntp.comnet.bg";
 
@@ -60,6 +59,16 @@ int clockCenterX = w / 2;
 int clockCenterY = w / 2;
 int fontW;
 int fontH;
+
+int startDay = 2; // Sunday's value is 1, Saturday is 7
+String week1 = "";
+String week2 = "";
+String week3 = "";
+String week4 = "";
+String week5 = "";
+int newWeekStart = 0;
+int monthLength = 0;
+
 
 void setup()
 {
@@ -102,6 +111,7 @@ void setup()
   ts.setRotation(0);
 
 
+
   drawMainDisplay();
 }
 
@@ -128,6 +138,7 @@ void loop()
     if (now() != prevDisplay)
     { //update the display only if time has changed
       prevDisplay = now();
+
       digitalClockDisplay();
 
       //TFTClockDisplay();
@@ -138,13 +149,11 @@ void loop()
       drawMin(minute());
       drawHour(hour(), minute());
 
-
+      //calendarDraw();
 
     }
   }
 }
-
-
 
 void TFTClockDisplay()
 {
@@ -223,21 +232,21 @@ void drawMainDisplay()
 
   tft.drawFastVLine(0, 0, 320, ILI9341_CYAN);
   tft.drawFastVLine(239, 0, 320, ILI9341_CYAN);
-  
-  tft.drawFastVLine(39, 239, 80, ILI9341_CYAN);
-  tft.setCursor(clockCenterX - 110, clockCenterY + 140);tft.print((char)174);
-  tft.setCursor(clockCenterX - 110, clockCenterY + 160);tft.print((char)174);
-  
-  tft.drawFastVLine(199, 239, 80, ILI9341_CYAN);
-  //tft.println((char)175);
-  //tft.println((char)175);
+
+//  tft.drawFastVLine(39, 239, 80, ILI9341_CYAN);
+//  tft.setCursor(clockCenterX - 110, clockCenterY + 140); tft.print((char)174);
+//  tft.setCursor(clockCenterX - 110, clockCenterY + 160); tft.print((char)174);
+//
+//  tft.drawFastVLine(199, 239, 80, ILI9341_CYAN);
+//  tft.setCursor(clockCenterX + 110, clockCenterY + 140); tft.print((char)175);
+//  tft.setCursor(clockCenterX + 110, clockCenterY + 160); tft.print((char)175);
 
 
   tft.drawFastHLine(0, 0, 239, ILI9341_CYAN);
   tft.drawFastHLine(0, 239, 239, ILI9341_CYAN);
   tft.drawFastHLine(0, 319, 239, ILI9341_CYAN);
 
-  tft.fillCircle(clockCenterX, clockCenterY, clockCenterX, ILI9341_CYAN);
+  tft.fillCircle(clockCenterX, clockCenterY, clockCenterX - 1, ILI9341_CYAN);
   tft.fillCircle(clockCenterX, clockCenterY, clockCenterX - 5, ILI9341_BLACK);
   tft.fillCircle(clockCenterX, clockCenterY, 3, ILI9341_RED);
 
@@ -417,6 +426,7 @@ void printTftDigit(int number)
   tft.print(number);
 }
 
+
 /*-------- NTP code ----------*/
 
 const int NTP_PACKET_SIZE = 48; // NTP time is in the first 48 bytes of message
@@ -474,4 +484,204 @@ void sendNTPpacket(IPAddress &address)
   Udp.beginPacket(address, 123); //NTP requests are to port 123
   Udp.write(packetBuffer, NTP_PACKET_SIZE);
   Udp.endPacket();
+}
+
+// calculate first day of month
+
+int startDayOfWeek(int y, int m, int d)
+{
+  static int t[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+  y -= m < 3;
+  return (y + y / 4 - y / 100 + y / 400 + t[m - 1] + d ) % 7;
+}
+
+void calendarDraw()
+{
+
+  int tempYear = 2019; //year();
+  int tempMonth = 12; //month();
+  int tempDay = 29; //day();
+
+  int tmpDay;
+  int tmpResultDay;
+
+  // get number of days in month
+  if (tempMonth == 1 || tempMonth == 3 || tempMonth == 5 || tempMonth == 7 || tempMonth == 8 || tempMonth == 10 || tempMonth == 12)
+  {
+    monthLength = 31;
+  }
+  else monthLength = 30;
+
+  if (tempMonth == 2)
+  {
+    if (tempYear % 4 == 0 && tempYear % 100 != 0 ) monthLength = 29;
+    else monthLength = 28;
+  }
+
+  startDay = startDayOfWeek(tempYear, tempMonth, tempDay); // Sunday's value is 0
+
+  if (startDay == 6) tmpResultDay = 6;
+  if (startDay == 5) tmpResultDay = 5;
+  if (startDay == 4) tmpResultDay = 4;
+  if (startDay == 3) tmpResultDay = 3;
+  if (startDay == 2) tmpResultDay = 2;
+  if (startDay == 1) tmpResultDay = 1;
+  if (startDay == 0) tmpResultDay = 7;
+
+  switch (startDay)
+  {
+    case 1:
+      // Monday
+      week1 = " 1  2  3  4  5  6  7";
+      break;
+
+    case 2:
+      // Thursday
+      week1 = "    1  2  3  4  5  6";
+      break;
+
+    case 3:
+      // Wednesday
+      week1 = "       1  2  3  4  5";
+      break;
+
+    case 4:
+      // Thursday
+      if (monthLength  < 30) week1 = "          1  2  3  4";
+      if (monthLength == 30) week1 = "30        1  2  3  4";
+      if (monthLength == 31) week1 = "30 31     1  2  3  4";
+      break;
+
+    case 5:
+      // Friday
+      if (monthLength  < 31) week1 = "             1  2  3";
+      if (monthLength == 31) week1 = "31           1  2  3";
+      break;
+
+    case 6:
+      // Saturday
+      if (monthLength  < 31) week1 = "                1  2";
+      if (monthLength == 31) week1 = "31              1  2";
+      break;
+
+    case 0:
+      // Sunday
+      if (monthLength <= 29) week1 = "                   1";
+      if (monthLength == 30) week1 = "30                 1";
+      if (monthLength == 31) week1 = "30 31              1";
+      break;
+
+  } // end first week
+
+  newWeekStart = (7 - tmpResultDay) + 2;
+  const char* newWeek1 = (const char*) week1.c_str();
+
+
+
+  // display week 2
+  week2 = "";
+  for (int f = newWeekStart; f < newWeekStart + 7; f++)
+  {
+    if (f < 10)
+    {
+      week2 = week2 +  " " + String(f) + " ";
+    }
+    else
+    {
+      week2 = week2 + String(f) + " ";
+    }
+  }
+  const char* newWeek2 = (const char*) week2.c_str();
+
+
+  // display week 3
+  newWeekStart = (14 - tmpResultDay) + 2;
+  week3 = "";
+  for (int f = newWeekStart; f < newWeekStart + 7; f++)
+  {
+    if (f < 10)
+    {
+      week3 = week3 +  " " + String(f) + " ";
+    }
+    else
+    {
+      week3 = week3 + String(f) + " ";
+    }
+  }
+  const char* newWeek3 = (const char*) week3.c_str();
+
+
+  // display week 4
+  newWeekStart = (21 - tmpResultDay) + 2;
+  week4 = "";
+  for (int f = newWeekStart; f < newWeekStart + 7; f++) {
+    if (f < 10) {
+      week4 = week4 +  " " + String(f) + " ";
+    }
+    else {
+      week4 = week4 + String(f) + " ";
+    }
+  }
+  const char* newWeek4 = (const char*) week4.c_str();
+
+
+  // display week 5
+  week5 = "";
+  newWeekStart = (28 - tmpResultDay) + 2;
+  // is is February?
+  if (newWeekStart > 28 && tempMonth == 2)
+  {
+    // do nothing unless its a leap year
+    if (tempYear % 4 == 0 && tempYear % 100 != 0)
+    { // its a leap year
+      week5 = "29";
+    }
+  }
+  else
+  { // print up to 30 anyway
+    if (tempMonth == 2)
+    { // its February
+      for (int f = newWeekStart; f < 29; f++)
+      {
+        week5 = week5 + String(f) + " ";
+      }
+      // is it a leap year
+      if (tempYear % 4 == 0 && tempYear % 100 != 0)
+      { // its a leap year
+        week5 = week5 + "29";
+      }
+    }
+    else
+    {
+      for (int f = newWeekStart; f < 31; f++)
+      {
+        week5 = week5 + String(f) + " ";
+      }
+      // are there 31 days
+      if (monthLength == 31 && week5.length() < 7)
+      {
+        week5 = week5 + "31";
+      }
+    }
+  }
+  const char* newWeek5 = (const char*) week5.c_str();
+
+  tft.setCursor(0, 0);
+  tft.print("Mo Tu We Th Fr Sa Su");
+  tft.println(" ");
+  tft.print(week1);
+  tft.println(" ");
+  tft.println(week2);
+  tft.println(week3);
+  tft.println(week4);
+  tft.println(week5);
+
+
+  tft.println(" ");
+  tft.print(day());
+  tft.print(".");
+  tft.print(month());
+  tft.print(".");
+  tft.print(year());
+
 }

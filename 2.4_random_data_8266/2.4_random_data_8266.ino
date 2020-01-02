@@ -1,10 +1,12 @@
-#include "SPI.h"
 #include "Adafruit_GFX.h"
 #include "Adafruit_ILI9341.h"
 
-#define TFT_DC D8
-#define TFT_CS D0
-Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
+
+#define TFT_CS 14  //for D32 Pro
+#define TFT_DC 27  //for D32 Pro
+#define TFT_RST 33 //for D32 Pro
+
+Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 
 
 #define GLCD_CL_BLACK 0x0000
@@ -35,19 +37,26 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 char BX[20];
 int lectV;
 
-void setup() {
+void setup() 
+{
   tft.begin();
-  tft.setRotation(1); tft.fillScreen(ILI9341_BLACK);
-  tft.setTextColor(GLCD_CL_SILVER, ILI9341_BLACK); tft.setTextSize(2);
-  tft.setCursor(0, 5); tft.print("Number");
+  tft.setRotation(1); 
+  tft.fillScreen(ILI9341_BLACK);
+  tft.setTextColor(GLCD_CL_SILVER, ILI9341_BLACK); 
+  tft.setTextSize(2);
+  tft.setCursor(0, 5); 
+  tft.print("Number");
 
   sprintf(BX,"Volume = %4d ml", lectV);
-  tft.setCursor(10, 50);  tft.print(BX);
+  tft.setCursor(10, 50);  
+  tft.print(BX);
 }
 
-void loop() {
+void loop() 
+{
   lectV = random(9000); 
   sprintf(BX,"Volume = %4d ml", lectV);
-  tft.setCursor(10, 50);  tft.print(BX);
+  tft.setCursor(10, 50);  
+  tft.print(BX);
   delay(500);
 }

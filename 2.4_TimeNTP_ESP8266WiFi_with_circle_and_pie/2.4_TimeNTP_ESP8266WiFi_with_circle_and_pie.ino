@@ -32,8 +32,8 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 //#define TFT_GREENYELLOW 0xAFE5  ///< 173, 255,  41
 //#define TFT_PINK        0xFC18  ///< 255, 130, 198
 
-const char ssid[] = "magicbox";
-const char pass[] = "013423944";
+const char ssid[] = "test";
+const char pass[] = "1q2w3e4r";
 
 static const char ntpServerName[] = "ntp.comnet.bg";
 
@@ -213,7 +213,7 @@ void drawMainDisplay()
 void drawMark(int h)
 {
   float x1, y1, x2, y2;
-  
+
   h = h * 30;
   h = h + 270;
   x1 = 114 * cos(h * 0.0174532925);
@@ -223,23 +223,23 @@ void drawMark(int h)
   tft.drawLine(x1 + clockCenterX, y1 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, ILI9341_CYAN);
 
   float sx = 0, sy = 1;
-  uint16_t xx0=0, xx1=0, yy0=0, yy1=0;
+  uint16_t xx0 = 0, xx1 = 0, yy0 = 0, yy1 = 0;
 
-  for(int i = 0; i<360; i+= 6) 
+  for (int i = 0; i < 360; i += 6)
   {
-    sx = cos((i-90)*0.0174532925);
-    sy = sin((i-90)*0.0174532925);
-    xx0 = sx*102+120;
-    yy0 = sy*102+120;
+    sx = cos((i - 90) * 0.0174532925);
+    sy = sin((i - 90) * 0.0174532925);
+    xx0 = sx * 102 + 120;
+    yy0 = sy * 102 + 120;
     // Draw minute markers
     tft.drawPixel(xx0, yy0, ILI9341_WHITE);
-    
+
     // Draw main quadrant dots
     //if(i==0 || i==180) tft.fillCircle(xx0, yy0, 2, ILI9341_CYAN);
     //if(i==90 || i==270) tft.fillCircle(xx0, yy0, 2, ILI9341_CYAN);
 
   }
-  
+
 }
 
 void drawSec(int s)
@@ -268,7 +268,7 @@ void drawMin(int m)
 {
   float x1, y1, x2, y2, x3, y3, x4, y4;
   int pm = m - 1;
-  int w = 5; 
+  int w = 5;
   if (pm == -1)
     pm = 59;
   pm = pm * 6;
