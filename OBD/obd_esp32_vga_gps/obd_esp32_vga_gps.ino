@@ -17,8 +17,8 @@ const int greenPin = 19;
 const int bluePin = 27;
 const int hsyncPin = 32;
 const int vsyncPin = 33;
-const int w = tft.width();  // 240
-const int h = tft.height(); // 320
+const int w = 150; 
+const int h = 200;
 const int clockCenterX = w / 2;
 const int clockCenterY = w / 2;
 
@@ -34,15 +34,13 @@ double fuelRate;
 double fuelTMP;
 
 int RPM;
-int COOLANT;
+int COOLANT_TEMP;
+double ENGINE_FUEL_RATE;
 int RUNTIME;
-int VOLTAGE;
+double CONTROL_MODULE_VOLTAGE;
 int AMBIENT_TEMP;
-
-
-
-
-
+int FUEL_LEVEL;
+int ENGINE_OIL_TEMP;
 
 /*
      0 -> black
@@ -93,7 +91,6 @@ int AMBIENT_TEMP;
 
   
 */
-
 
 void showDTC()
 {
@@ -186,7 +183,7 @@ void dashInfo()
   vga.setCursor(60, 4);
   vga.print("RPM");
   vga.setCursor(60, 28);
-  setColorByValue(RPM, 3000, 3300, 3600);
+  setColorByValue(RPM, 2500, 3000, 3500);
   vga.print(RPM, 4);
 
   // COOLANT
@@ -196,13 +193,13 @@ void dashInfo()
   vga.setCursor(110, 28);
   vga.print(COOLANT);
 
-  // L/100KM
+  // L/100KM -- TODO !!!!
 
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
   vga.setCursor(160, 4);
   vga.print("L/KM");
 
-  if (speedTMP <= 0) speedTMP = 0.01;
+  if (speedTMP <= 0) speedTMP = 0.1;
   if (fuelTMP > 30.00) fuelTMP = 30.00;
   fuelTMP = (fuelRate / speedTMP) / 0.036;
 
@@ -250,10 +247,11 @@ void dashInfo()
   vga.rect(0, 0, 200, 96, 6);
 }
 
-void bottom()
+void bottom() //done
 {
   vga.rect(0, 96, 200, 54, 6);
-  if (gps.satellites.isValid())
+  
+  if (gps.satellites.isValid()) //print valid GPS Sat Count
   {
     vga.setCursor(10, 98);
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
@@ -263,14 +261,14 @@ void bottom()
     if (gps.satellites.value() < 10) vga.print(" ");
   }
 
-  if (!gps.satellites.isValid() || gps.satellites.value() < 1 )
+  if (!gps.satellites.isValid() || gps.satellites.value() < 1 ) //print NOFIX GPS Sat Count
   {
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
     vga.setCursor(10, 98);
     vga.print("GPS FIX:NO");
   }
 
-  if (gps.location.isValid())
+  if (gps.location.isValid()) //print valid GPS Location
   {
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
     vga.setCursor(10, 114);
@@ -279,14 +277,14 @@ void bottom()
     vga.print(gps.location.lng(), 6);
   }
 
-  if (!gps.location.isValid())
+  if (!gps.location.isValid()) //print NOFIX GPS Location
   {
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
     vga.setCursor(10, 114);
     vga.print("NOFIX");
   }
 
-  if (gps.date.isValid())
+  if (gps.date.isValid()) //print valid GPS Date
   {
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
     vga.setCursor(110, 98);
@@ -299,14 +297,14 @@ void bottom()
     vga.print(gps.date.year());
   }
 
-  if (!gps.date.isValid())
+  if (!gps.date.isValid()) //print NOFIX GPS Date
   {
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
     vga.setCursor(110, 98);
     vga.print("NOFIX");
   }
 
-  if (gps.time.isValid())
+  if (gps.time.isValid()) //print valid GPS Time
   {
     vga.setCursor(110, 114);
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
@@ -320,7 +318,7 @@ void bottom()
     vga.print(gps.time.second());
   }
 
-  if (!gps.time.isValid())
+  if (!gps.time.isValid()) //print NOFIX GPS Time
   {
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
     vga.setCursor(110, 114);
@@ -328,14 +326,10 @@ void bottom()
   }
 }
 
-
-
 void oledDisp()
 {
   // TO DO
 }
-
-
 
 void drawMainDisplay()
 {
@@ -367,7 +361,7 @@ void drawMark(int h)
   x2 = 42 * cos(h * 0.0174532925);
   y2 = 42 * sin(h * 0.0174532925);
   
-  tft.line(x1 + clockCenterX, y1 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, 6);
+  vga.line(x1 + clockCenterX, y1 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, 6);
 
   float sx = 0, sy = 1;
   uint16_t xx0 = 0, xx1 = 0, yy0 = 0, yy1 = 0;
@@ -397,17 +391,17 @@ void drawSec(int s)
     ps = 59;
   ps = ps * 6;
   ps = ps + 270;
-  x1 = 95 * cos(ps * 0.0174532925);
-  y1 = 95 * sin(ps * 0.0174532925);
-  x2 = 5 * cos(ps * 0.0174532925);
-  y2 = 5 * sin(ps * 0.0174532925);
+  x1 = 40 * cos(ps * 0.0174532925);
+  y1 = 40 * sin(ps * 0.0174532925);
+  x2 = 2 * cos(ps * 0.0174532925);
+  y2 = 2 * sin(ps * 0.0174532925);
   vga.line(x1 + clockCenterX, y1 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, 0);
   s = s * 6;
   s = s + 270;
-  x1 = 95 * cos(s * 0.0174532925);
-  y1 = 95 * sin(s * 0.0174532925);
-  x2 = 5 * cos(s * 0.0174532925);
-  y2 = 5 * sin(s * 0.0174532925);
+  x1 = 40 * cos(s * 0.0174532925);
+  y1 = 40 * sin(s * 0.0174532925);
+  x2 = 2 * cos(s * 0.0174532925);
+  y2 = 2 * sin(s * 0.0174532925);
   vga.line(x1 + clockCenterX, y1 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, 7);
 }
 
@@ -420,32 +414,32 @@ void drawMin(int m)
     pm = 59;
   pm = pm * 6;
   pm = pm + 270;
-  x1 = 80 * cos(pm * 0.0174532925);
-  y1 = 80 * sin(pm * 0.0174532925);
-  x2 = 5 * cos(pm * 0.0174532925);
-  y2 = 5 * sin(pm * 0.0174532925);
-  x3 = 30 * cos((pm + w) * 0.0174532925);
-  y3 = 30 * sin((pm + w) * 0.0174532925);
-  x4 = 30 * cos((pm - w) * 0.0174532925);
-  y4 = 30 * sin((pm - w) * 0.0174532925);
-  tft.drawLine(x1 + clockCenterX, y1 + clockCenterY, x3 + clockCenterX, y3 + clockCenterY, ILI9341_BLACK);
-  tft.drawLine(x3 + clockCenterX, y3 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, ILI9341_BLACK);
-  tft.drawLine(x2 + clockCenterX, y2 + clockCenterY, x4 + clockCenterX, y4 + clockCenterY, ILI9341_BLACK);
-  tft.drawLine(x4 + clockCenterX, y4 + clockCenterY, x1 + clockCenterX, y1 + clockCenterY, ILI9341_BLACK);
+  x1 = 35 * cos(pm * 0.0174532925);
+  y1 = 35 * sin(pm * 0.0174532925);
+  x2 = 2 * cos(pm * 0.0174532925);
+  y2 = 2 * sin(pm * 0.0174532925);
+  x3 = 10 * cos((pm + w) * 0.0174532925);
+  y3 = 10 * sin((pm + w) * 0.0174532925);
+  x4 = 10 * cos((pm - w) * 0.0174532925);
+  y4 = 10 * sin((pm - w) * 0.0174532925);
+  vga.line(x1 + clockCenterX, y1 + clockCenterY, x3 + clockCenterX, y3 + clockCenterY, 0);
+  vga.line(x3 + clockCenterX, y3 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, 0);
+  vga.line(x2 + clockCenterX, y2 + clockCenterY, x4 + clockCenterX, y4 + clockCenterY, 0);
+  vga.line(x4 + clockCenterX, y4 + clockCenterY, x1 + clockCenterX, y1 + clockCenterY, 0);
   m = m * 6;
   m = m + 270;
-  x1 = 80 * cos(m * 0.0174532925);
-  y1 = 80 * sin(m * 0.0174532925);
-  x2 =  5 * cos(m * 0.0174532925);
-  y2 =  5 * sin(m * 0.0174532925);
-  x3 = 30 * cos((m + w) * 0.0174532925);
-  y3 = 30 * sin((m + w) * 0.0174532925);
-  x4 = 30 * cos((m - w) * 0.0174532925);
-  y4 = 30 * sin((m - w) * 0.0174532925);
-  tft.drawLine(x1 + clockCenterX, y1 + clockCenterY, x3 + clockCenterX, y3 + clockCenterY, ILI9341_WHITE);
-  tft.drawLine(x3 + clockCenterX, y3 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, ILI9341_WHITE);
-  tft.drawLine(x2 + clockCenterX, y2 + clockCenterY, x4 + clockCenterX, y4 + clockCenterY, ILI9341_WHITE);
-  tft.drawLine(x4 + clockCenterX, y4 + clockCenterY, x1 + clockCenterX, y1 + clockCenterY, ILI9341_WHITE);
+  x1 = 35 * cos(m * 0.0174532925);
+  y1 = 35 * sin(m * 0.0174532925);
+  x2 =  2 * cos(m * 0.0174532925);
+  y2 =  2 * sin(m * 0.0174532925);
+  x3 = 10 * cos((m + w) * 0.0174532925);
+  y3 = 10 * sin((m + w) * 0.0174532925);
+  x4 = 10 * cos((m - w) * 0.0174532925);
+  y4 = 10 * sin((m - w) * 0.0174532925);
+  vga.line(x1 + clockCenterX, y1 + clockCenterY, x3 + clockCenterX, y3 + clockCenterY, 7);
+  vga.line(x3 + clockCenterX, y3 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, 7);
+  vga.line(x2 + clockCenterX, y2 + clockCenterY, x4 + clockCenterX, y4 + clockCenterY, 7);
+  vga.line(x4 + clockCenterX, y4 + clockCenterY, x1 + clockCenterX, y1 + clockCenterY, 7);
 }
 
 void drawHour(int h, int m)
@@ -461,35 +455,33 @@ void drawHour(int h, int m)
     ph = (ph * 30) + ((m - 1) / 2);
   }
   ph = ph + 270;
-  x1 = 60 * cos(ph * 0.0174532925);
-  y1 = 60 * sin(ph * 0.0174532925);
-  x2 = 5 * cos(ph * 0.0174532925);
-  y2 = 5 * sin(ph * 0.0174532925);
-  x3 = 20 * cos((ph + w) * 0.0174532925);
-  y3 = 20 * sin((ph + w) * 0.0174532925);
-  x4 = 20 * cos((ph - w) * 0.0174532925);
-  y4 = 20 * sin((ph - w) * 0.0174532925);
-  tft.drawLine(x1 + clockCenterX, y1 + clockCenterY, x3 + clockCenterX, y3 + clockCenterY, ILI9341_BLACK);
-  tft.drawLine(x3 + clockCenterX, y3 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, ILI9341_BLACK);
-  tft.drawLine(x2 + clockCenterX, y2 + clockCenterY, x4 + clockCenterX, y4 + clockCenterY, ILI9341_BLACK);
-  tft.drawLine(x4 + clockCenterX, y4 + clockCenterY, x1 + clockCenterX, y1 + clockCenterY, ILI9341_BLACK);
+  x1 = 30 * cos(ph * 0.0174532925);
+  y1 = 30 * sin(ph * 0.0174532925);
+  x2 = 2 * cos(ph * 0.0174532925);
+  y2 = 2 * sin(ph * 0.0174532925);
+  x3 = 10 * cos((ph + w) * 0.0174532925);
+  y3 = 10 * sin((ph + w) * 0.0174532925);
+  x4 = 10 * cos((ph - w) * 0.0174532925);
+  y4 = 10 * sin((ph - w) * 0.0174532925);
+  vga.line(x1 + clockCenterX, y1 + clockCenterY, x3 + clockCenterX, y3 + clockCenterY, 0);
+  vga.line(x3 + clockCenterX, y3 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, 0);
+  vga.line(x2 + clockCenterX, y2 + clockCenterY, x4 + clockCenterX, y4 + clockCenterY, 0);
+  vga.line(x4 + clockCenterX, y4 + clockCenterY, x1 + clockCenterX, y1 + clockCenterY, 0);
   h = (h * 30) + (m / 2);
   h = h + 270;
-  x1 = 60 * cos(h * 0.0174532925);
-  y1 = 60 * sin(h * 0.0174532925);
-  x2 = 5 * cos(h * 0.0174532925);
-  y2 = 5 * sin(h * 0.0174532925);
-  x3 = 20 * cos((h + w) * 0.0174532925);
-  y3 = 20 * sin((h + w) * 0.0174532925);
-  x4 = 20 * cos((h - w) * 0.0174532925);
-  y4 = 20 * sin((h - w) * 0.0174532925);
-  tft.drawLine(x1 + clockCenterX, y1 + clockCenterY, x3 + clockCenterX, y3 + clockCenterY, ILI9341_WHITE);
-  tft.drawLine(x3 + clockCenterX, y3 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, ILI9341_WHITE);
-  tft.drawLine(x2 + clockCenterX, y2 + clockCenterY, x4 + clockCenterX, y4 + clockCenterY, ILI9341_WHITE);
-  tft.drawLine(x4 + clockCenterX, y4 + clockCenterY, x1 + clockCenterX, y1 + clockCenterY, ILI9341_WHITE);
+  x1 = 30 * cos(h * 0.0174532925);
+  y1 = 30 * sin(h * 0.0174532925);
+  x2 = 2 * cos(h * 0.0174532925);
+  y2 = 2 * sin(h * 0.0174532925);
+  x3 = 10 * cos((h + w) * 0.0174532925);
+  y3 = 10 * sin((h + w) * 0.0174532925);
+  x4 = 10 * cos((h - w) * 0.0174532925);
+  y4 = 10 * sin((h - w) * 0.0174532925);
+  tft.drawLine(x1 + clockCenterX, y1 + clockCenterY, x3 + clockCenterX, y3 + clockCenterY, 7);
+  tft.drawLine(x3 + clockCenterX, y3 + clockCenterY, x2 + clockCenterX, y2 + clockCenterY, 7);
+  tft.drawLine(x2 + clockCenterX, y2 + clockCenterY, x4 + clockCenterX, y4 + clockCenterY, 7);
+  tft.drawLine(x4 + clockCenterX, y4 + clockCenterY, x1 + clockCenterX, y1 + clockCenterY, 7);
 }
-
-
 
 void setup()
 {
@@ -557,11 +549,19 @@ void readData(byte pid, int value)
       break;
 
     case PID_CONTROL_MODULE_VOLTAGE:
-      VOLTAGE = value;
+      VOLTAGE = (double)value;
       break;
 
     case PID_AMBIENT_TEMP:
       AMBIENT_TEMP = value;
+      break;
+
+    case PID_FUEL_LEVEL:
+      FUEL_LEVEL = value;
+      break;
+    
+    case PID_ENGINE_OIL_TEMP:
+      ENGINE_OIL_TEMP = value;
       break;
   }
 }
@@ -668,7 +668,7 @@ void loop()
     Serial.println(F("No GPS detected: check wiring."));
     while (true);
   }
-  static byte pids[] = {PID_RPM, PID_COOLANT_TEMP, PID_ENGINE_FUEL_RATE, PID_RUNTIME, PID_CONTROL_MODULE_VOLTAGE, PID_AMBIENT_TEMP};
+  static byte pids[] = {PID_RPM, PID_RUNTIME, PID_FUEL_LEVEL, PID_ENGINE_FUEL_RATE, PID_CONTROL_MODULE_VOLTAGE, PID_AMBIENT_TEMP, PID_COOLANT_TEMP, PID_ENGINE_OIL_TEMP};
   static byte index = 0;
   byte pid = pids[index];
   int value;
