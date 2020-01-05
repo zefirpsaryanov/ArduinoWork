@@ -10,7 +10,6 @@
 
 
 #define key1 15 //connect wire 4 to pin 15 --> 1
-//#define key2 2  //connect wire 1 to pin  2 --> 2
 #define key3 0  //connect wire 3 to pin  0 --> 3
 #define key4 4  //connect wire 2 to pin  4 --> 4
 
@@ -24,7 +23,6 @@ const int h = 150;
 const int clockCenterX = h / 2;
 const int clockCenterY = h / 2;
 
-//VGA Device
 VGA3Bit vga;
 COBDI2C obd;
 TinyGPSPlus gps;
@@ -102,8 +100,8 @@ void showDTC()
 void setColorByValue(int value1, int threshold1, int threshold2, int threshold3)
 {
   if (value1 >= 0 && value1 < threshold1) vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // white
-  if (value1 >= threshold1 && value1 < threshold2) vga.setTextColor(vga.RGB(255, 255, 0), vga.RGB(0, 0, 0)); // yellow
-  if (value1 >= threshold2 && value1 < threshold3) vga.setTextColor(vga.RGB(0, 255, 0), vga.RGB(0, 0, 0)); // green
+  if (value1 >= threshold1 && value1 < threshold2) vga.setTextColor(vga.RGB(0, 255, 0), vga.RGB(0, 0, 0)); // green
+  if (value1 >= threshold2 && value1 < threshold3) vga.setTextColor(vga.RGB(255, 255, 0), vga.RGB(0, 0, 0)); // yellow
   if (value1 >= threshold3) vga.setTextColor(vga.RGB(255, 0, 0), vga.RGB(0, 0, 0)); // red
 }
 
@@ -129,11 +127,6 @@ void key15Func() // TO DO
   // TO DO
 }
 
-void key2Func() // NOT TO DO
-{
-
-}
-
 void key0Func() // TO DO
 {
   // TO DO
@@ -144,7 +137,7 @@ void key4Func() // TO DO
   // TO DO
 }
 
-void speedInfo()
+void speedDraw()
 {
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
   vga.setCursor(10, 4);
@@ -164,10 +157,9 @@ void speedInfo()
     vga.setCursor(10, 28);
     vga.print("***");
   }
-
 }
 
-void rpmInfo()
+void rpmDraw()
 {
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
   vga.setCursor(60, 4);
@@ -177,7 +169,7 @@ void rpmInfo()
   vga.print(RPM, 4);
 }
 
-void coolantInfo()
+void coolantDraw()
 {
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
   vga.setCursor(110, 4);
@@ -186,30 +178,26 @@ void coolantInfo()
   vga.print(COOLANT);
 }
 
-void fuelInfo()
+void fuelCalcs()
 {
-  // L/100KM -- TODO !!!!
+  if (speedTMP <= 0) speedTMP = 0.1;
+  if (fuelTMP >= 30.00) fuelTMP = 30.00;
+  if (fuelRate <= 0) fuelRate = 0.01;
+  fuelTMP = (fuelRate / speedTMP) / 0.036;
+}
 
+void fuelDraw()
+{
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
   vga.setCursor(160, 4);
   vga.print("L/KM");
-
-  if (speedTMP <= 0) speedTMP = 0.1;
-  if (fuelTMP > 30.00) fuelTMP = 30.00;
-  fuelTMP = (fuelRate / speedTMP) / 0.036;
-
   if (fuelTMP < 10) vga.print("  ");
-  if (fuelTMP > 1)
-  {
-    vga.setCursor(160, 28);
-    setColorByValue(fuelTMP, 5, 7, 9);
-    vga.print(fuelTMP, 2);
-  }
-
-  if (fuelRate <= 0) fuelRate = 0.01;
+  vga.setCursor(160, 28);
+  setColorByValue(fuelTMP, 5, 7, 9);
+  vga.print(fuelTMP, 2);
 }
 
-void runtimeInfo()
+void runtimeDraw()
 {
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
   vga.setCursor(10, 52);
@@ -218,7 +206,7 @@ void runtimeInfo()
   vga.print(RUNTIME / 60, 3);
 }
 
-void distanceInfo()
+void distanceDraw()
 {
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
   vga.setCursor(60, 52);
@@ -227,7 +215,7 @@ void distanceInfo()
   vga.print(distance / 36000, 1);
 }
 
-void voltsInfo()
+void voltsDraw()
 {
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
   vga.setCursor(110, 52);
@@ -236,7 +224,7 @@ void voltsInfo()
   vga.print(VOLTAGE, 2);
 }
 
-void ambientInfo()
+void ambientDraw()
 {
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
   vga.setCursor(160, 52);
@@ -252,7 +240,7 @@ void bottom()
     vga.setCursor(10, 98);
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
     vga.print("GPS FIX:");
-    setColorByValue(gps.satellites.value(), 5, 7, 15);
+    setColorByValue(gps.satellites.value(), 4, 8, 15);
     vga.print(gps.satellites.value());
     if (gps.satellites.value() < 10) vga.print(" ");
   }
@@ -263,6 +251,8 @@ void bottom()
     vga.setCursor(10, 98);
     vga.print("GPS FIX:NO");
   }
+
+
 
   if (gps.location.isValid()) //print valid GPS Location
   {
@@ -279,6 +269,8 @@ void bottom()
     vga.setCursor(10, 114);
     vga.print("NOFIX");
   }
+
+
 
   if (gps.date.isValid()) //print valid GPS Date
   {
@@ -672,13 +664,13 @@ void debugInfo() // GPS Debug Info
 
 void loop()
 {
+  mainFrame();
+  
   int key1S = digitalRead(key1); // read if key1 is pressed
-  //int key2S = digitalRead(key2); // read if key2 is pressed
   int key3S = digitalRead(key3); // read if key3 is pressed
   int key4S = digitalRead(key4); // read if key4 is pressed
 
   if (!key1S) key15Func();
-  //if (!key2S) key2Func();
   if (!key3S) key0Func();
   if (!key4S) key4Func();
 
@@ -688,7 +680,7 @@ void loop()
       distance += gps.speed.kmph();
       oledDisp();
       debugInfo();
-      mainFrame();
+      fuelCalcs();
     }
 
   if (millis() > 5000 && gps.charsProcessed() < 10)
@@ -701,7 +693,7 @@ void loop()
   static byte index = 0;
   byte pid = pids[index];
   int value;
-  
+
   // send a query to OBD adapter for specified OBD-II pid
 
   if (obd.readPID(pid, value))
