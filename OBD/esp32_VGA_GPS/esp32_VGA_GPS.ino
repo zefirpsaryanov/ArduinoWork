@@ -3,6 +3,17 @@
 #include <GfxWrapper.h>
 #include <Fonts/FreeMonoBoldOblique24pt7b.h>
 #include <Fonts/FreeSerif9pt7b.h>
+#include <TinyGPS++.h>
+#include <HardwareSerial.h>
+
+#define BLACK    0x0000
+#define BLUE     0x001F
+#define RED      0xF800
+#define GREEN    0x07E0
+#define CYAN     0x07FF
+#define MAGENTA  0xF81F
+#define YELLOW   0xFFE0
+#define WHITE    0xFFFF
 
 /***fonts***
   #include<Fonts/FreeMono9pt7b.h  >
@@ -56,40 +67,20 @@
 
 */
 
-
-
-
 VGA6Bit vga;
 GfxWrapper<VGA6Bit> gfx(vga, 640, 400);
-
-
-#include <TinyGPS++.h>
-#include <HardwareSerial.h>
-
 
 TinyGPSPlus gps;
 HardwareSerial SerialGPS(2);
 
 void setup()
 {
-#define BLACK    0x0000
-#define BLUE     0x001F
-#define RED      0xF800
-#define GREEN    0x07E0
-#define CYAN     0x07FF
-#define MAGENTA  0xF81F
-#define YELLOW   0xFFE0
-#define WHITE    0xFFFF
-
-
-
   Serial.begin(9600);
   SerialGPS.begin(9600, SERIAL_8N1, 17, 16);
 
   vga.init(vga.MODE640x400, vga.VGABlackEdition);
 
   gfx.setFont(&FreeMonoBoldOblique24pt7b);
-
 }
 
 

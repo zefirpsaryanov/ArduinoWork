@@ -6,12 +6,13 @@ HardwareSerial HS(2);
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
   HS.begin(9600, SERIAL_8N1, 17, 16);
 
   Serial.println(F("FullExample.ino"));
   Serial.println(F("An extensive example of many interesting TinyGPS++ features"));
-  Serial.print(F("Testing TinyGPS++ library v. ")); Serial.println(TinyGPSPlus::libraryVersion());
+  Serial.print  (F("Testing TinyGPS++ library v. ")); 
+  Serial.println(TinyGPSPlus::libraryVersion());
   Serial.println(F("by Mikal Hart"));
   Serial.println();
   Serial.println(F("Sats HDOP  Latitude   Longitude   Fix  Date       Time     Date Alt    Course Speed Card  Distance Course Card  Chars Sentences Checksum"));
