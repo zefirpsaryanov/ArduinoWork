@@ -105,7 +105,6 @@ void setColorByValue(int value1, int threshold1, int threshold2, int threshold3)
 
 void circlesInfo()
 {
-
   //speed
   vga.circle(50, 51, 50, 6);
   vga.circle(50, 51, 49, 1);
@@ -117,7 +116,6 @@ void circlesInfo()
   vga.circle(149, 51, 50, 6);
   vga.circle(149, 51, 49, 1);
   vga.fillCircle(149, 51, 5, 6);
-
 }
 
 void key15Func() // TO DO
@@ -342,7 +340,7 @@ void oledDisp()
 
 void mainDisplay()
 {
-//  mainClock();
+  //  mainClock();
   speedDraw();
   rpmDraw();
   coolantDraw();
@@ -353,7 +351,6 @@ void mainDisplay()
   ambientDraw();
   bottom();
 }
-
 
 void drawMark(int h)
 {
@@ -385,9 +382,9 @@ void drawMark(int h)
 
 void drawClockFrame()
 {
-  vga.fillCircle(clockCenterX, clockCenterY, clockCenterX - 1, 6); // lite blue
-  vga.fillCircle(clockCenterX, clockCenterY, clockCenterX - 3, 0); // black
-  vga.fillCircle(clockCenterX, clockCenterY, 3, 1);                // red
+  vga.circle(clockCenterX, clockCenterY, clockCenterX - 1, 6); // lite blue
+  vga.circle(clockCenterX, clockCenterY, clockCenterX - 3, 0); // black
+  vga.circle(clockCenterX, clockCenterY, 3, 1);                // red
 
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // white
   vga.setCursor(clockCenterX + 45, clockCenterY - 5); vga.print("3");

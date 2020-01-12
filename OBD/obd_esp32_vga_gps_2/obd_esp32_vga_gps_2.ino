@@ -203,12 +203,12 @@ void bottom()
     if (gps.satellites.value() < 10) vga.print(" ");
   }
 
-  if (!gps.satellites.isValid() || gps.satellites.value() < 1 ) //print NOFIX GPS Sat Count
-  {
-    vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-    vga.setCursor(10, 98);
-    vga.print("GPS FIX:NO");
-  }
+//  if (!gps.satellites.isValid() || gps.satellites.value() < 1) //print NOFIX GPS Sat Count 
+//  {
+//    vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
+//    vga.setCursor(10, 98);
+//    vga.print("GPS FIX:NO");
+//  }
 
   if (gps.location.isValid()) //print valid GPS Location
   {
@@ -270,7 +270,7 @@ void bottom()
 
 void oledDisp()
 {
-  int HH = gps.time.hour();
+  int HH = gps.time.hour() + 2;
   int MM = gps.time.minute();
   int SS = gps.time.second();
 
@@ -291,8 +291,9 @@ void oledDisp()
 
   myOLED.print(timeToString, CENTER, 0);  // time
 
-  myOLED.printNumF(fuelTMP, 1, LEFT, 16);
-  myOLED.printNumI(AMBIENT_TEMP, CENTER, 16);
+
+  myOLED.printNumI(AMBIENT_TEMP, LEFT, 16);
+  myOLED.printNumF(fuelTMP, 1, CENTER, 16);
   myOLED.printNumI(COOLANT, RIGHT, 16);
 }
 
@@ -301,13 +302,13 @@ void mainDisplay()
   speedDraw();
   rpmDraw();
   coolantDraw();
-  fuelDraw();
+  //fuelDraw();
   runtimeDraw();
   distanceDraw();
   voltsDraw();
   ambientDraw();
   bottom();
-  showDTC();
+  //showDTC();
 }
 
 void fuelCalc()
@@ -325,6 +326,7 @@ void setup()
   myOLED.begin(SSD1306_128X32);
 
   vga.setFrameBufferCount(2);
+  //vga.init(vga.MODE400x300, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
   vga.init(vga.MODE200x150, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
   vga.setFont(CodePage437_8x19);
 
@@ -480,29 +482,29 @@ void loop()
       fuelCalc();
     }
 
-//  if (millis() > 5000 && gps.charsProcessed() < 10)
-//  {
-//    Serial.println(F("No GPS detected: check wiring."));
-//    while (true);
-//  }
-//
-//  static byte pids[] = {PID_RPM, PID_RUNTIME, PID_FUEL_LEVEL, PID_ENGINE_FUEL_RATE, PID_CONTROL_MODULE_VOLTAGE, PID_AMBIENT_TEMP, PID_COOLANT_TEMP, PID_ENGINE_OIL_TEMP};
-//  static byte index = 0;
-//  byte pid = pids[index];
-//  int value;
-//
-//  // send a query to OBD adapter for specified OBD-II pid
-//
-//  if (obd.readPID(pid, value))
-//  {
-//    readData(pid, value);
-//  }
-//
-//  index = (index + 1) % sizeof(pids);
-//
-//  if (obd.errors >= 100)
-//  {
-//    reconnect();
-//    setup();
-//  }
+  //  if (millis() > 5000 && gps.charsProcessed() < 10)
+  //  {
+  //    Serial.println(F("No GPS detected: check wiring."));
+  //    while (true);
+  //  }
+  //
+  //  static byte pids[] = {PID_RPM, PID_RUNTIME, PID_FUEL_LEVEL, PID_ENGINE_FUEL_RATE, PID_CONTROL_MODULE_VOLTAGE, PID_AMBIENT_TEMP, PID_COOLANT_TEMP, PID_ENGINE_OIL_TEMP};
+  //  static byte index = 0;
+  //  byte pid = pids[index];
+  //  int value;
+  //
+  //  // send a query to OBD adapter for specified OBD-II pid
+  //
+  //  if (obd.readPID(pid, value))
+  //  {
+  //    readData(pid, value);
+  //  }
+  //
+  //  index = (index + 1) % sizeof(pids);
+  //
+  //  if (obd.errors >= 100)
+  //  {
+  //    reconnect();
+  //    setup();
+  //  }
 }
