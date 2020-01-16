@@ -149,7 +149,7 @@ void fuelDraw()
   vga.print("L/KM");
   vga.setCursor(160, 28);
   setColorByValue(fuelTMP, 5, 7, 9);
-  if (RPM >= 0 && RPM < 10) vga.print(" ");
+  if (fuelTMP >= 0 && fuelTMP < 10) vga.print(" ");
   vga.print(fuelTMP, 1);
   vga.print(" ");
   vga.rect(0, 0, w, h, 6);
@@ -203,12 +203,12 @@ void bottom()
     if (gps.satellites.value() < 10) vga.print(" ");
   }
 
-//  if (!gps.satellites.isValid() || gps.satellites.value() < 1) //print NOFIX GPS Sat Count 
-//  {
-//    vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-//    vga.setCursor(10, 98);
-//    vga.print("GPS FIX:NO");
-//  }
+  //  if (!gps.satellites.isValid() || gps.satellites.value() < 1) //print NOFIX GPS Sat Count
+  //  {
+  //    vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
+  //    vga.setCursor(10, 98);
+  //    vga.print("GPS FIX:NO");
+  //  }
 
   if (gps.location.isValid()) //print valid GPS Location
   {
@@ -278,23 +278,25 @@ void oledDisp()
   String strMM;
   String strSS;
   String timeToString;
+  String secondRow;
 
   HH < 10 ? strHH = "0" + String(HH) : strHH = String(HH);
   MM < 10 ? strMM = "0" + String(MM) : strMM = String(MM);
   SS < 10 ? strSS = "0" + String(SS) : strSS = String(SS);
 
-  timeToString =  strHH + "." + strMM + "." + strSS;
+  timeToString = strHH + "." + strMM + "." + strSS;
+  secondRow = " " + String(AMBIENT_TEMP) + " " + String(COOLANT) + " " + String(fuelTMP) + "  ";
 
   myOLED.update();
-  myOLED.setBrightness(255);
+  myOLED.setBrightness(1);
   myOLED.setFont(MediumNumbers);
 
   myOLED.print(timeToString, CENTER, 0);  // time
+  myOLED.print(secondRow, LEFT, 16); //secondRow
 
-
-  myOLED.printNumI(AMBIENT_TEMP, LEFT, 16);
-  myOLED.printNumF(fuelTMP, 1, CENTER, 16);
-  myOLED.printNumI(COOLANT, RIGHT, 16);
+  //  myOLED.printNumI(AMBIENT_TEMP, LEFT, 16);
+  //  myOLED.printNumF(fuelTMP, 1, CENTER, 16);
+  //  myOLED.printNumI(COOLANT, RIGHT, 16);
 }
 
 void mainDisplay()
