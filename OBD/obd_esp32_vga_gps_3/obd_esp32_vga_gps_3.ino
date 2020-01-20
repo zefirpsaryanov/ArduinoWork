@@ -14,6 +14,7 @@ const int vsyncPin = 33;
 const int w = 200;
 const int h = 150;
 
+
 VGA3Bit vga;
 COBDI2C obd;
 TinyGPSPlus gps;
@@ -101,104 +102,121 @@ void setColorByValue(int value1, int threshold1, int threshold2, int threshold3)
 void speedDraw()
 {
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-  vga.setCursor(10, 4);
+  vga.setCursor(5, 5);
   vga.print("KM/H");
   if (gps.speed.isValid())
   {
-    vga.setCursor(10, 28);
+    vga.setCursor(9, 21);
     speedTMP = gps.speed.kmph();
     setColorByValue(speedTMP, 51, 91, 121);
-    if (speedTMP >= 0 && speedTMP < 10) vga.print("  ");
-    if (speedTMP >= 10 && speedTMP < 100) vga.print(" ");
+    if (speedTMP >= 0 && speedTMP < 10) vga.print("00");
+    if (speedTMP >= 10 && speedTMP < 100) vga.print("0");
     vga.print(speedTMP, 0);
   }
 
   if (!gps.speed.isValid())
   {
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-    vga.setCursor(10, 28);
-    vga.print("0");
+    vga.setCursor(9, 21);
+    vga.print("000");
   }
 }
 
 void rpmDraw()
 {
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-  vga.setCursor(60, 4);
+  vga.setCursor(48, 5);
   vga.print("RPM");
-  vga.setCursor(60, 28);
+  vga.setCursor(45, 21);
   setColorByValue(RPM, 2500, 3000, 3500);
-  if (RPM >= 0 && RPM < 10) vga.print("   ");
-  if (RPM >= 10 && RPM < 100) vga.print("  ");
-  if (RPM >= 100 && RPM < 1000) vga.print(" ");
+  if (RPM >= 0 && RPM < 10) vga.print("000");
+  if (RPM >= 10 && RPM < 100) vga.print("00");
+  if (RPM >= 100 && RPM < 1000) vga.print("0");
   vga.print(RPM);
 }
 
 void coolantDraw()
 {
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-  vga.setCursor(110, 4);
-  vga.print("WATER");
-  vga.setCursor(110, 28);
-  if (COOLANT >= 0 && RPM < 10) vga.print("  ");
-  if (COOLANT >= 10 && RPM < 100) vga.print(" ");
+  vga.setCursor(82, 5);
+  vga.print("Water");
+  vga.setCursor(90, 21);
+  if (COOLANT >= 0 && RPM < 10) vga.print("00");
+  if (COOLANT >= 10 && RPM < 100) vga.print("0");
   vga.print(COOLANT);
 }
 
 void fuelDraw()
 {
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-  vga.setCursor(160, 4);
+  vga.setCursor(130, 5);
   vga.print("L/KM");
-  vga.setCursor(160, 28);
+  vga.setCursor(130, 21);
   setColorByValue(fuelTMP, 5, 7, 9);
-  if (fuelTMP >= 0 && fuelTMP < 10) vga.print(" ");
+  if (fuelTMP >= 0 && fuelTMP < 10) vga.print("0");
   vga.print(fuelTMP, 1);
   vga.print(" ");
-  vga.rect(0, 0, w, h, 6);
+}
+
+void ambientDraw()
+{
+  vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
+  vga.setCursor(175, 5);
+  vga.print("C*");
+  vga.setCursor(175, 21);
+  vga.print(AMBIENT_TEMP);
 }
 
 void runtimeDraw()
 {
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-  vga.setCursor(10, 52);
+  vga.setCursor(9, 50);
   vga.print("RUN");
-  vga.setCursor(10, 76);
+  vga.setCursor(25, 66);
   vga.print(RUNTIME / 60, 3);
 }
 
 void distanceDraw()
 {
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-  vga.setCursor(60, 52);
+  vga.setCursor(45, 50);
   vga.print("DIST");
-  vga.setCursor(60, 76);
+  vga.setCursor(63, 66);
   vga.print(distance / 36000, 0);
 }
 
 void voltsDraw()
 {
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-  vga.setCursor(110, 52);
+  vga.setCursor(86, 50);
   vga.print("V+/-");
-  vga.setCursor(110, 76);
+  vga.setCursor(91, 66);
   vga.print(VOLTAGE, 1);
 }
 
-void ambientDraw()
+void fuellvlDraw()
 {
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-  vga.setCursor(160, 52);
-  vga.print("C *");
-  vga.setCursor(160, 76);
-  vga.print(AMBIENT_TEMP);
+  vga.setCursor(125, 50);
+  vga.print("F.%");
+  vga.setCursor(137, 66);
+  vga.print(FUEL_LEVEL);
+}
+
+void oilTempDraw()
+{
+  vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
+  vga.setCursor(158, 50);
+  vga.print("OIL.C");
+  vga.setCursor(175, 66);
+  vga.print(ENGINE_OIL_TEMP);
 }
 
 void bottom()
 {
   if (gps.satellites.isValid()) //print valid GPS Sat Count
   {
-    vga.setCursor(10, 98);
+    vga.setCursor(10, 95);
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
     vga.print("GPS FIX:");
     setColorByValue(gps.satellites.value(), 4, 8, 15);
@@ -209,14 +227,14 @@ void bottom()
   //  if (!gps.satellites.isValid() || gps.satellites.value() < 1) //print NOFIX GPS Sat Count
   //  {
   //    vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-  //    vga.setCursor(10, 98);
+  //    vga.setCursor(10, 95);
   //    vga.print("GPS FIX:NO");
   //  }
 
   if (gps.location.isValid()) //print valid GPS Location
   {
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-    vga.setCursor(10, 114);
+    vga.setCursor(10, 112);
     vga.print(gps.location.lat(), 6);
     vga.setCursor(10, 130);
     vga.print(gps.location.lng(), 6);
@@ -225,14 +243,14 @@ void bottom()
   if (!gps.location.isValid()) //print NOFIX GPS Location
   {
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-    vga.setCursor(10, 114);
+    vga.setCursor(10, 112);
     vga.print("NOFIX");
   }
 
   if (gps.date.isValid()) //print valid GPS Date
   {
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-    vga.setCursor(110, 98);
+    vga.setCursor(110, 112);
     if (gps.date.day() < 10) vga.print("0");
     vga.print(gps.date.day());
     vga.print(":");
@@ -245,13 +263,13 @@ void bottom()
   if (!gps.date.isValid()) //print NOFIX GPS Date
   {
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-    vga.setCursor(110, 98);
+    vga.setCursor(110, 112);
     vga.print("NOFIX");
   }
 
   if (gps.time.isValid()) //print valid GPS Time
   {
-    vga.setCursor(110, 114);
+    vga.setCursor(110, 95);
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
     if (gps.time.hour() + 2 < 10) vga.print("0");
     vga.print(gps.time.hour() + 2);
@@ -266,7 +284,7 @@ void bottom()
   if (!gps.time.isValid()) //print NOFIX GPS Time
   {
     vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-    vga.setCursor(110, 114);
+    vga.setCursor(110, 95);
     vga.print("NOFIX");
   }
 }
@@ -303,10 +321,10 @@ void oledDisp()
 
   timeToString = strHH + "." + strMM + "." + strSS;
   dateToString = strDDD + "." + strMMM + "." + String(YYY);
-  
+
   myOLED.printNumF(fuelTMP, 1 , LEFT , 16);
   myOLED.printNumI(COOLANT, RIGHT, 16);
-  myOLED.print(timeToString, CENTER,0);
+  myOLED.print(timeToString, CENTER, 0);
   myOLED.update();
 }
 
@@ -328,9 +346,11 @@ void mainDisplay()
   distanceDraw();
   voltsDraw();
   ambientDraw();
+  fuellvlDraw();
+  oilTempDraw();
   bottom();
-  //showDTC();
-  oledDisp();
+
+  //oledDisp();
 }
 
 void setup()
@@ -349,6 +369,7 @@ void setup()
   //while (!obd.init());
 
   vga.clear();
+  //showDTC();
 }
 
 void reconnect()
@@ -484,7 +505,8 @@ void debugInfo() // GPS Debug Info
 void loop()
 {
   vga.rect(0, 0, w, h, 6);
-  vga.line(0, 96, 198, 96, 6); // - line
+  vga.line(0, 44 , 198, 44, 6); // - line
+  vga.line(0, 91 , 198, 91, 6); // - line 2
 
   mainDisplay();
 
