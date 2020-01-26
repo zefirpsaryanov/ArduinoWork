@@ -11,8 +11,8 @@
 #include <Adafruit_BMP085.h>
 
 // Replace with your network credentials
-const char* ssid     = "REPLACE_WITH_YOUR_SSID";
-const char* password = "REPLACE_WITH_YOUR_PASSWORD";
+const char* ssid     = "test";
+const char* password = "1q2w3e4r";
 
 // uncomment one of the lines below for whatever DHT sensor type you're using
 //#define DHTTYPE DHT11   // DHT 11

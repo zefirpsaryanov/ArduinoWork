@@ -2,8 +2,8 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
-const char ssid[] = "magicbox";  //  your network SSID (name)
-const char pass[] = "013423944";       // your network password
+const char ssid[] = "test";
+const char pass[] = "1q2w3e4r";
 
 // NTP Servers:
 static const char ntpServerName[] = "us.pool.ntp.org";

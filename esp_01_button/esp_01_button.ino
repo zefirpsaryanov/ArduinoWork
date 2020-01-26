@@ -7,8 +7,9 @@
 #include <ESP8266WiFi.h>
 
 // Replace with your SSID and Password
-const char* ssid     = "REPLACE_WITH_YOUR_SSID";
-const char* password = "REPLACE_WITH_YOUR_PASSWORD";
+
+const char* ssid     = "test";
+const char* password = "1q2w3e4r";
 
 // Replace with your unique IFTTT URL resource
 const char* resource = "REPLACE_WITH_YOUR_IFTTT_URL_RESOURCE";

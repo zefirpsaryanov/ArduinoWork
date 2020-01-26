@@ -13,8 +13,9 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 
-const char ssid[] = "magicbox";  //  your network SSID (name)
-const char pass[] = "013423944";       // your network password
+const char ssid[] = "test";
+const char pass[] = "1q2w3e4r";
+
 
 #define TFT_CS D0  //for D1 mini or TFT I2C Connector Shield (V1.1.0 or later)
 #define TFT_DC D8  //for D1 mini or TFT I2C Connector Shield (V1.1.0 or later)
