@@ -14,35 +14,39 @@ const int vsyncPin = 33;
 const int w = 200;
 const int h = 150;
 
-
 VGA3Bit vga;
 COBDI2C obd;
 TinyGPSPlus gps;
 HardwareSerial SerialGPS(2);
-
 
 OLED  myOLED(21, 22);
 extern uint8_t SmallFont[];
 extern uint8_t MediumNumbers[];
 extern uint8_t BigNumbers[];
 
-double speedTMP;
+int gpsSpeed;
 double distance;
 double fuelTMP;
 
 int RPM;
 int COOLANT;
 double ENGINE_FUEL_RATE;
+int AMBIENT_TEMP;
+
 int RUNTIME;
 double VOLTAGE;
-int AMBIENT_TEMP;
 int FUEL_LEVEL;
 int ENGINE_OIL_TEMP;
 
+char tempSPEED[20];
+char tempRPM[20];
+char tempCOOLANT[20];
+char tempFUEL[20];
+char tempAMBIENT[20];
 
 char timeToStringOLED[20];
 char timeToStringVGA[20];
-char dateToString[20];
+char dateToStringVGA[20];
 
 /*
      0 -> black
@@ -109,23 +113,9 @@ void speedDraw()
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
   vga.setCursor(5, 5);
   vga.print("KM/H");
-  if (gps.speed.isValid())
-  {
-    vga.setCursor(9, 21);
-    speedTMP = gps.speed.kmph();
-    setColorByValue(speedTMP, 51, 91, 121);
-    if (speedTMP >= 0 && speedTMP < 10) vga.print("00");
-    if (speedTMP >= 10 && speedTMP < 100) vga.print("0");
-    vga.print(speedTMP, 0);
-    vga.print(" ");
-  }
-
-  if (!gps.speed.isValid())
-  {
-    vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-    vga.setCursor(9, 21);
-    vga.print("000");
-  }
+  vga.setCursor(9, 21);
+  setColorByValue(gpsSpeed, 51, 91, 121);
+  vga.print(tempSPEED);
 }
 
 void rpmDraw()
@@ -135,10 +125,7 @@ void rpmDraw()
   vga.print("RPM");
   vga.setCursor(45, 21);
   setColorByValue(RPM, 2500, 3000, 3500);
-  if (RPM >= 0 && RPM < 10) vga.print("000");
-  if (RPM >= 10 && RPM < 100) vga.print("00");
-  if (RPM >= 100 && RPM < 1000) vga.print("0");
-  vga.print(RPM);
+  vga.print(tempRPM);
 }
 
 void coolantDraw()
@@ -147,9 +134,7 @@ void coolantDraw()
   vga.setCursor(82, 5);
   vga.print("Water");
   vga.setCursor(90, 21);
-  if (COOLANT >= 0 && COOLANT < 10) vga.print("00");
-  if (COOLANT >= 10 && COOLANT < 100) vga.print("0");
-  vga.print(COOLANT);
+  vga.print(tempCOOLANT);
 }
 
 void fuelDraw()
@@ -159,9 +144,7 @@ void fuelDraw()
   vga.print("L/KM");
   vga.setCursor(130, 21);
   setColorByValue(fuelTMP, 5, 7, 9);
-  if (fuelTMP >= 0 && fuelTMP < 10) vga.print("0");
-  vga.print(fuelTMP, 1);
-  vga.print(" ");
+  vga.print(tempFUEL);
 }
 
 void ambientDraw()
@@ -170,10 +153,10 @@ void ambientDraw()
   vga.setCursor(174, 5);
   vga.print("C*");
   vga.setCursor(174, 21);
-  //  if (AMBIENT_TEMP < 0 && AMBIENT_TEMP < 10) vga.print("-"); /// TO DO
-  if (AMBIENT_TEMP >= 0 && AMBIENT_TEMP < 10) vga.print("0");
-  vga.print(AMBIENT_TEMP);
+  vga.print(tempAMBIENT);
 }
+
+/* ---------- second row ---------- */
 
 void runtimeDraw()
 {
@@ -201,6 +184,7 @@ void voltsDraw()
   vga.setCursor(86, 66);
   if (VOLTAGE >= 0 && VOLTAGE < 10) vga.print("0");
   vga.print(VOLTAGE, 1);
+  //%02.1f
 }
 
 void fuellvlDraw()
@@ -211,6 +195,7 @@ void fuellvlDraw()
   vga.setCursor(130, 66);
   if (FUEL_LEVEL >= 0 && FUEL_LEVEL < 10) vga.print("0");
   vga.print(FUEL_LEVEL);
+  // %02d
 }
 
 void oilTempDraw()
@@ -222,6 +207,7 @@ void oilTempDraw()
   if (ENGINE_OIL_TEMP >= 0 && ENGINE_OIL_TEMP < 10) vga.print("00");
   if (ENGINE_OIL_TEMP >= 10 && ENGINE_OIL_TEMP < 100) vga.print("0");
   vga.print(ENGINE_OIL_TEMP);
+  // %03d
 }
 
 void bottom()
@@ -233,15 +219,7 @@ void bottom()
     vga.print("GPS FIX:");
     setColorByValue(gps.satellites.value(), 4, 8, 15);
     vga.print(gps.satellites.value());
-    if (gps.satellites.value() < 10) vga.print(" ");
   }
-
-  //  if (!gps.satellites.isValid() || gps.satellites.value() < 1) //print NOFIX GPS Sat Count
-  //  {
-  //    vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-  //    vga.setCursor(10, 95);
-  //    vga.print("GPS FIX:NO");
-  //  }
 
   if (gps.location.isValid()) //print valid GPS Location
   {
@@ -259,20 +237,6 @@ void bottom()
     vga.print("NOFIX");
   }
 
-  if (gps.date.isValid()) //print valid GPS Date
-  {
-    vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-    vga.setCursor(110, 112);
-    vga.print(dateToString);
-  }
-
-  if (!gps.date.isValid()) //print NOFIX GPS Date
-  {
-    vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
-    vga.setCursor(110, 112);
-    vga.print("NOFIX");
-  }
-
   if (gps.time.isValid()) //print valid GPS Time
   {
     vga.setCursor(110, 95);
@@ -286,70 +250,61 @@ void bottom()
     vga.setCursor(110, 95);
     vga.print("NOFIX");
   }
+
+  if (gps.date.isValid()) //print valid GPS Date
+  {
+    vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
+    vga.setCursor(110, 112);
+    vga.print(dateToStringVGA);
+  }
+
+  if (!gps.date.isValid()) //print NOFIX GPS Date
+  {
+    vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
+    vga.setCursor(110, 112);
+    vga.print("NOFIX");
+  }
 }
 
 void oledDisp()
 {
-  //  //myOLED.clrScr();
-  //  myOLED.setBrightness(1);
-  //  myOLED.setFont(MediumNumbers);
-  //
-  //  int HH = gps.time.hour() + 2;
-  //  int MM = gps.time.minute();
-  //  int SS = gps.time.second();
-  //  int DDD = gps.date.day();
-  //  int MMM = gps.date.month();
-  //  int YYY = gps.date.year();
-  //
-  //  String strHH;
-  //  String strMM;
-  //  String strSS;
-  //
-  //  String strDDD;
-  //  String strMMM;
-  //
-  //  String timeToString;
-  //  String dateToString;
-  //  String secondRow;
-  //
-  //  HH < 10 ? strHH = "0" + String(HH) : strHH = String(HH);
-  //  MM < 10 ? strMM = "0" + String(MM) : strMM = String(MM);
-  //  SS < 10 ? strSS = "0" + String(SS) : strSS = String(SS);
-  //
-  //  DDD < 10 ? strDDD = "0" + String(DDD) : strDDD = String(DDD);
-  //  MMM < 10 ? strMMM = "0" + String(MMM) : strMMM = String(MMM);
-  //
-  //  timeToString = strHH + "." + strMM + "." + strSS;
-  //  dateToString = strDDD + "." + strMMM + "." + String(YYY);
-  //
-  //  myOLED.print(timeToString, CENTER, 0);
-  //  myOLED.printNumF(fuelTMP, 1 , LEFT , 16);
-  //  myOLED.printNumI(COOLANT, RIGHT, 16);
-  //  myOLED.update();
-
   myOLED.clrScr();
   myOLED.setBrightness(1);
   myOLED.setFont(MediumNumbers);
 
-  myOLED.print(timeToStringOLED, CENTER, 0);
+  myOLED.print(timeToStringOLED, RIGHT, 0);
   //myOLED.print(dateToString, CENTER, 16);
-  myOLED.printNumF(fuelTMP, 1 , LEFT , 16);
-  myOLED.printNumI(COOLANT, RIGHT, 16);
+  myOLED.print(tempFUEL , RIGHT , 16);
+
+  myOLED.setFont(BigNumbers);
+  myOLED.printNumI(COOLANT, LEFT, 0);
   myOLED.update();
 }
 
-void calculator()
-{
-  // FUEL
-  if (speedTMP <= 0) speedTMP = 0.01;
-  if (fuelTMP >= 30.00) fuelTMP = 30.00;
-  if (ENGINE_FUEL_RATE <= 0) ENGINE_FUEL_RATE = 0.01;
-  fuelTMP = (ENGINE_FUEL_RATE / speedTMP) / 0.036;
 
-  // TIME and DATE
+void sprintfDataCalcs()
+{
+  /* ------------ sprintf ------------ */
+  sprintf(tempSPEED, "%03d", gpsSpeed);
+  sprintf(tempRPM , "%04d", RPM);
+  sprintf(tempCOOLANT, "%03d", COOLANT);
+  sprintf(tempFUEL , "%.1f" , fuelTMP );
+  sprintf(tempAMBIENT , "%02d", AMBIENT_TEMP );
+
   sprintf(timeToStringVGA, "%02d:%02d:%02d", gps.time.hour() + 2, gps.time.minute(), gps.time.second());
-  sprintf(timeToStringOLED, "%02d.%02d.%02d", gps.time.hour() + 2, gps.time.minute(), gps.time.second());
-  sprintf(dateToString, "%02d.%02d.%d", gps.date.day(), gps.date.month(), gps.date.year());
+  sprintf(dateToStringVGA, "%02d.%02d.%d", gps.date.day(), gps.date.month(), gps.date.year());
+  sprintf(timeToStringOLED, "%02d.%02d", gps.time.hour() + 2, gps.time.minute());
+
+  /* ------------ Data Calculations ------------*/
+
+  gps.speed.isValid() ? gpsSpeed = (int)gps.speed.kmph() : gpsSpeed = 0;
+
+  if (gpsSpeed <= 0) gpsSpeed = 999;
+  if (fuelTMP >= 40.00) fuelTMP = 40.00;
+  if (ENGINE_FUEL_RATE <= 0) ENGINE_FUEL_RATE = 0.01;
+  fuelTMP = (ENGINE_FUEL_RATE / gpsSpeed) / 0.036;
+
+  distance += gps.speed.kmph();
 
 }
 
@@ -462,7 +417,6 @@ void reconnect()
 
 void readData(byte pid, int value)
 {
-  char buf[8];
   switch (pid)
   {
     case PID_RPM:
@@ -525,13 +479,13 @@ void loop()
   vga.line(0, 91 , 198, 91, 6); // - line 2
 
   mainDisplay();
+  
 
   while (SerialGPS.available() > 0)
     if (gps.encode(SerialGPS.read()))
     {
-      calculator();
       debugInfoGPS();
-      distance += gps.speed.kmph();
+      sprintfDataCalcs();
     }
 
   if (millis() > 5000 && gps.charsProcessed() < 10)
@@ -540,13 +494,13 @@ void loop()
     while (true);
   }
 
-  //  static byte pids[] = {PID_RPM, PID_RUNTIME, PID_FUEL_LEVEL, PID_ENGINE_FUEL_RATE, PID_CONTROL_MODULE_VOLTAGE, PID_AMBIENT_TEMP, PID_COOLANT_TEMP, PID_ENGINE_OIL_TEMP};
-  //  static byte index = 0;
-  //  byte pid = pids[index];
-  //  int value;
-  //
-  //  // send a query to OBD adapter for specified OBD-II pid
-  //
+  static byte pids[] = {PID_RPM, PID_RUNTIME, PID_FUEL_LEVEL, PID_ENGINE_FUEL_RATE, PID_CONTROL_MODULE_VOLTAGE, PID_AMBIENT_TEMP, PID_COOLANT_TEMP, PID_ENGINE_OIL_TEMP};
+  static byte index = 0;
+  byte pid = pids[index];
+  int value;
+
+  // send a query to OBD adapter for specified OBD-II pid
+
   //  if (obd.readPID(pid, value))
   //  {
   //    readData(pid, value);
