@@ -40,8 +40,8 @@ See more at https://thingpulse.com
  * Begin Settings
  **************************/
 // WIFI
-const char* WIFI_SSID = "magicbox";
-const char* WIFI_PWD = "013423944";
+const char* WIFI_SSID = "test";
+const char* WIFI_PWD = "1q2w3e4r";
 
 // Setup
 const int UPDATE_INTERVAL_SECS = 10 * 60; // Update every 10 minutes

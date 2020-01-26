@@ -16,14 +16,14 @@ const bool LOGGING = false;
 
 const bool useImperial = false;
 
-const char* wifiSSID = "magicbox";
-const char* wifiPassword = "013423944";
+const char* wifiSSID = "test";
+const char* wifiPassword = "1q2w3e4r";
 const int connectionRetrys = 30;
 
 const char* mqttServer = "io.adafruit.com";
 const int   mqttPort = 1883;                   //8883 for SSL
 const String mqttUser = "zvers";
-const char* mqttPassword = "7274eb91c89d4b55b70f64d7ca396cb8";
+const char* mqttPassword = "key";
 
 const String temperatureFeed = mqttUser + "/feeds/temperature";
 const String pressureFeed = mqttUser + "/feeds/pressure";

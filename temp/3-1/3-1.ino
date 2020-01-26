@@ -9,8 +9,8 @@
 #define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
 
 // Replace with your network details
-const char* ssid = "magicbox";
-const char* password = "013423944";
+const char* ssid = "test";
+const char* password = "1q2w3e4r";
 
 //time setup time 
 WiFiUDP ntpUDP;

@@ -46,8 +46,8 @@ See more at https://thingpulse.com
  **************************/
 
 // WIFI
-const char* WIFI_SSID = "magicbox";
-const char* WIFI_PWD = "013423944";
+const char* WIFI_SSID = "test";
+const char* WIFI_PWD = "1q2w3e4r";
 
 #define TZ              2       // (utc+) TZ in hours
 #define DST_MN          60      // use 60mn for summer time in some countries

@@ -7,8 +7,8 @@ PN532_I2C pn532i2c(Wire);
 PN532 nfc(pn532i2c);
 
 // Replace with your network credentials
-const char* ssid     = "magicbox";
-const char* password = "013423944";
+const char* ssid     = "test";
+const char* password = "1q2w3e4r";
 
 // Set web server port number to 80
 WiFiServer server(80);
