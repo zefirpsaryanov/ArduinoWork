@@ -9,8 +9,8 @@ Adafruit_BME280 bme;
 
 float temperature, humidity, pressure, altitude;
 
-const char* ssid = "magicbox";  // Enter SSID here
-const char* password = "013423944";  //Enter Password here
+const char* ssid = "test";  // Enter SSID here
+const char* password = "1q2w3e4r";  //Enter Password here
 
 ESP8266WebServer server(80);              
  

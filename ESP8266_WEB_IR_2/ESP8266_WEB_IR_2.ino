@@ -13,8 +13,8 @@
 
 IRsend irsend(IR_SEND_PIN);
 
-const char* ssid = "magicbox";
-const char* password = "013423944";
+const char* ssid = "test";
+const char* password = "1q2w3e4r";
 
 ESP8266WebServer server(80);
 

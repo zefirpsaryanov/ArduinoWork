@@ -15,8 +15,8 @@
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
 
-const char* ssid     = "magicbox";
-const char* password = "013423944";
+const char* ssid     = "test";
+const char* password = "1q2w3e4r";
 
 // Enter your custom buttons here
 String custombuttons[][2] =
