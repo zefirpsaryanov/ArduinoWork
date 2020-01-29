@@ -43,6 +43,7 @@ char tempRPM[20];
 char tempCOOLANT[20];
 char tempFUEL[20];
 char tempAMBIENT[20];
+char tempVOLTAGE[20];
 
 char timeToStringOLED[20];
 char timeToStringVGA[20];
@@ -134,6 +135,7 @@ void coolantDraw()
   vga.setCursor(82, 5);
   vga.print("Water");
   vga.setCursor(90, 21);
+  setColorByValue(COOLANT, 80, 95, 110);
   vga.print(tempCOOLANT);
 }
 
@@ -182,9 +184,7 @@ void voltsDraw()
   vga.setCursor(86, 50);
   vga.print("V+/-");
   vga.setCursor(86, 66);
-  if (VOLTAGE >= 0 && VOLTAGE < 10) vga.print("0");
-  vga.print(VOLTAGE, 1);
-  //%02.1f
+  vga.print(tempVOLTAGE);
 }
 
 void fuellvlDraw()
@@ -289,7 +289,9 @@ void sprintfDataCalcs()
   sprintf(tempRPM , "%04d", RPM);
   sprintf(tempCOOLANT, "%03d", COOLANT);
   sprintf(tempFUEL , "%.1f" , fuelTMP );
-  sprintf(tempAMBIENT , "%02d", AMBIENT_TEMP );
+  sprintf(tempAMBIENT , "%.1f", AMBIENT_TEMP );
+  
+  sprintf(tempVOLTAGE, "%.1f", VOLTAGE);
 
   sprintf(timeToStringVGA, "%02d:%02d:%02d", gps.time.hour() + 2, gps.time.minute(), gps.time.second());
   sprintf(dateToStringVGA, "%02d.%02d.%d", gps.date.day(), gps.date.month(), gps.date.year());
@@ -305,7 +307,6 @@ void sprintfDataCalcs()
   fuelTMP = (ENGINE_FUEL_RATE / gpsSpeed) / 0.036;
 
   distance += gps.speed.kmph();
-
 }
 
 void mainDisplay()
@@ -479,7 +480,7 @@ void loop()
   vga.line(0, 91 , 198, 91, 6); // - line 2
 
   mainDisplay();
-  
+
 
   while (SerialGPS.available() > 0)
     if (gps.encode(SerialGPS.read()))
@@ -494,17 +495,17 @@ void loop()
     while (true);
   }
 
-  static byte pids[] = {PID_RPM, PID_RUNTIME, PID_FUEL_LEVEL, PID_ENGINE_FUEL_RATE, PID_CONTROL_MODULE_VOLTAGE, PID_AMBIENT_TEMP, PID_COOLANT_TEMP, PID_ENGINE_OIL_TEMP};
-  static byte index = 0;
-  byte pid = pids[index];
-  int value;
-
-  // send a query to OBD adapter for specified OBD-II pid
-
+  //  static byte pids[] = {PID_RPM, PID_RUNTIME, PID_FUEL_LEVEL, PID_ENGINE_FUEL_RATE, PID_CONTROL_MODULE_VOLTAGE, PID_AMBIENT_TEMP, PID_COOLANT_TEMP, PID_ENGINE_OIL_TEMP};
+  //  static byte index = 0;
+  //  byte pid = pids[index];
+  //  int value;
+  //
+  //  send a query to OBD adapter for specified OBD - II pid
+  //
   //  if (obd.readPID(pid, value))
-  //  {
-  //    readData(pid, value);
-  //  }
+  //    {
+  //      readData(pid, value);
+  //    }
   //
   //  index = (index + 1) % sizeof(pids);
   //
