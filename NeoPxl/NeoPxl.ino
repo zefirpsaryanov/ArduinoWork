@@ -12,10 +12,12 @@ void setup()
 
 void loop()
 {
-  colorWipeBack(strip.Color(255, 80, 0), 60);
+  //  colorWipeBack(strip.Color(255, 80, 0), 60);
+  //  strip.clear();
+  //  colorWipe(strip.Color(255, 80, 0), 60);
   strip.clear();
-  colorWipe(strip.Color(255, 80, 0), 60);
-  strip.clear();
+  color2ways(strip.Color(255, 80, 0), 60);
+
 }
 
 void colorWipe(int color, int wait)
@@ -38,8 +40,22 @@ void colorWipeBack(int color, int wait)
   }
 }
 
+void color2ways(int color, int wait)
+{
+  for (int i = strip.numPixels() / 2 ; i < strip.numPixels(); i++)
+  {
+    for (int j = strip.numPixels() / 2 - 1; j >= 0; j--)
+    {
+      strip.setPixelColor(i, color);
+      strip.setPixelColor(j, color);
+      strip.show();
+      delay(wait);
+    }
+  }
+}
 
 void singleLed()
 {
-  strip.setPixelColor(5, 0, 0, 255); // Set pixel , R , G , B
+  strip.setPixelColor(0, 255, 255, 255); // Set pixel , R , G , B
+  strip.show();
 }
