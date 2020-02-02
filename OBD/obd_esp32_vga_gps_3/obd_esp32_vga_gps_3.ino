@@ -19,7 +19,7 @@ COBDI2C obd;
 TinyGPSPlus gps;
 HardwareSerial SerialGPS(2);
 
-OLED  myOLED(21, 22);
+OLED myOLED(21, 22);
 extern uint8_t SmallFont[];
 extern uint8_t MediumNumbers[];
 extern uint8_t BigNumbers[];
@@ -43,7 +43,12 @@ char tempRPM[20];
 char tempCOOLANT[20];
 char tempFUEL[20];
 char tempAMBIENT[20];
+
+char tempRUN[20];
+char tempDISTANCE[20];
 char tempVOLTAGE[20];
+char tempFUEL_LEVEL[20];
+char tempENGINE_OIL_TEMP[20];
 
 char timeToStringOLED[20];
 char timeToStringVGA[20];
@@ -144,9 +149,18 @@ void fuelDraw()
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
   vga.setCursor(130, 5);
   vga.print("L/KM");
-  vga.setCursor(130, 21);
+  vga.setCursor(130, 21); 
   setColorByValue(fuelTMP, 5, 7, 9);
-  vga.print(tempFUEL);
+  
+  if (fuelTMP > 0)
+  {
+   vga.print(tempFUEL);
+   vga.print(" ");
+  }
+  else 
+  {
+    vga.print("0.0 ");
+  }
 }
 
 void ambientDraw()
@@ -165,8 +179,9 @@ void runtimeDraw()
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
   vga.setCursor(9, 50);
   vga.print("RUN");
-  vga.setCursor(25, 66);
-  vga.print(RUNTIME / 60, 3);
+  vga.setCursor(9, 66);
+//  vga.print(RUNTIME / 60, 3);
+  vga.print(tempRUN);
 }
 
 void distanceDraw()
@@ -174,8 +189,9 @@ void distanceDraw()
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
   vga.setCursor(45, 50);
   vga.print("Dist");
-  vga.setCursor(61, 66);
-  vga.print(distance / 36000, 0);
+  vga.setCursor(45, 66);
+//  vga.print(distance / 36000, 0);
+  vga.print(tempDISTANCE);
 }
 
 void voltsDraw()
@@ -193,9 +209,7 @@ void fuellvlDraw()
   vga.setCursor(125, 50);
   vga.print("F.%");
   vga.setCursor(130, 66);
-  if (FUEL_LEVEL >= 0 && FUEL_LEVEL < 10) vga.print("0");
-  vga.print(FUEL_LEVEL);
-  // %02d
+  vga.print(tempFUEL_LEVEL);
 }
 
 void oilTempDraw()
@@ -204,10 +218,7 @@ void oilTempDraw()
   vga.setCursor(158, 50);
   vga.print("OIL.C");
   vga.setCursor(166, 66);
-  if (ENGINE_OIL_TEMP >= 0 && ENGINE_OIL_TEMP < 10) vga.print("00");
-  if (ENGINE_OIL_TEMP >= 10 && ENGINE_OIL_TEMP < 100) vga.print("0");
-  vga.print(ENGINE_OIL_TEMP);
-  // %03d
+  vga.print(tempENGINE_OIL_TEMP);
 }
 
 void bottom()
@@ -281,17 +292,21 @@ void oledDisp()
   myOLED.update();
 }
 
-
 void sprintfDataCalcs()
 {
   /* ------------ sprintf ------------ */
+
   sprintf(tempSPEED, "%03d", gpsSpeed);
   sprintf(tempRPM , "%04d", RPM);
   sprintf(tempCOOLANT, "%03d", COOLANT);
   sprintf(tempFUEL , "%.1f" , fuelTMP );
-  sprintf(tempAMBIENT , "%.1f", AMBIENT_TEMP );
-  
+  sprintf(tempAMBIENT , "%02d", AMBIENT_TEMP );
+
+  sprintf(tempRUN , "%03d" , RUNTIME / 60);
+  sprintf(tempDISTANCE ,"%04d" , distance / 36000 );
   sprintf(tempVOLTAGE, "%.1f", VOLTAGE);
+  sprintf(tempFUEL_LEVEL , "%02d", FUEL_LEVEL);
+  sprintf(tempENGINE_OIL_TEMP, "%03d" , ENGINE_OIL_TEMP);
 
   sprintf(timeToStringVGA, "%02d:%02d:%02d", gps.time.hour() + 2, gps.time.minute(), gps.time.second());
   sprintf(dateToStringVGA, "%02d.%02d.%d", gps.date.day(), gps.date.month(), gps.date.year());
@@ -299,14 +314,20 @@ void sprintfDataCalcs()
 
   /* ------------ Data Calculations ------------*/
 
-  gps.speed.isValid() ? gpsSpeed = (int)gps.speed.kmph() : gpsSpeed = 0;
+  if (gps.speed.isValid())
+  {
+    gpsSpeed = (int)gps.speed.kmph();
+    distance += gps.speed.kmph();
+  }
 
-  if (gpsSpeed <= 0) gpsSpeed = 999;
-  if (fuelTMP >= 40.00) fuelTMP = 40.00;
+  if (!gps.speed.isValid())
+  {
+    gpsSpeed = 1;
+  }
+
+  if (fuelTMP <= 0) fuelTMP = 0.01;
   if (ENGINE_FUEL_RATE <= 0) ENGINE_FUEL_RATE = 0.01;
   fuelTMP = (ENGINE_FUEL_RATE / gpsSpeed) / 0.036;
-
-  distance += gps.speed.kmph();
 }
 
 void mainDisplay()
@@ -327,78 +348,77 @@ void mainDisplay()
 
 void debugInfoGPS() // GPS Debug Info
 {
-  Serial.print(F("Sat`s: "));
+  Serial.print("Sat`s: ");
   if (gps.satellites.isValid()) Serial.print(gps.satellites.value());
 
   if (!gps.satellites.isValid())
   {
-    Serial.print(F(" "));
-    Serial.print(F("NO FIX"));
+    Serial.print(" ");
+    Serial.print("NO FIX");
   }
 
-  Serial.print(F(" | "));
+  Serial.print(" | ");
 
-  Serial.print(F("Location: "));
+  Serial.print("Location: ");
   if (gps.location.isValid())
   {
     Serial.print(gps.location.lat(), 6);
-    Serial.print(F(" / "));
+    Serial.print(" / ");
     Serial.print(gps.location.lng(), 6);
   }
 
-  if (!gps.location.isValid()) Serial.print(F("NOFIX"));
+  if (!gps.location.isValid()) Serial.print("NOFIX");
 
-  Serial.print(F(" | "));
+  Serial.print(" | ");
 
   if (gps.date.isValid())
   {
-    if (gps.date.day() < 10) Serial.print(F("0"));
+    if (gps.date.day() < 10) Serial.print("0");
     Serial.print(gps.date.day());
-    Serial.print(F(":"));
-    if (gps.date.month() < 10) Serial.print(F("0"));
+    Serial.print(":");
+    if (gps.date.month() < 10) Serial.print("0");
     Serial.print(gps.date.month());
-    Serial.print(F(":"));
+    Serial.print(":");
     Serial.print(gps.date.year());
   }
 
-  if (!gps.date.isValid()) Serial.print(F("NOFIX"));
+  if (!gps.date.isValid()) Serial.print("NOFIX");
 
-  Serial.print(F(" | "));
+  Serial.print(" | ");
 
   if (gps.time.isValid())
   {
-    if (gps.time.hour() + 2 < 10) Serial.print(F("0"));
+    if (gps.time.hour() + 2 < 10) Serial.print("0");
     Serial.print(gps.time.hour() + 2);
-    Serial.print(F(":"));
-    if (gps.time.minute() < 10) Serial.print(F("0"));
+    Serial.print(":");
+    if (gps.time.minute() < 10) Serial.print("0");
     Serial.print(gps.time.minute());
-    Serial.print(F(":"));
-    if (gps.time.second() < 10) Serial.print(F("0"));
+    Serial.print(":");
+    if (gps.time.second() < 10) Serial.print("0");
     Serial.print(gps.time.second());
   }
 
-  if (!gps.time.isValid()) Serial.print(F("NOFIX"));
+  if (!gps.time.isValid()) Serial.print("NOFIX");
 
-  Serial.print(F(" | "));
-  Serial.print(F("Speed: "));
+  Serial.print(" | ");
+  Serial.print("Speed: ");
 
   if (gps.speed.isValid())
   {
     Serial.print(gps.speed.kmph());
-
   }
 
-  if (!gps.speed.isValid()) Serial.print(F("NO FIX"));
+  if (!gps.speed.isValid()) Serial.print("NO FIX");
 
-  Serial.print(F(" | "));
+  Serial.print(" | ");
 
   Serial.print(distance / 36000, 2);
-  Serial.print(F(" | "));
+  Serial.print(" | ");
 
   Serial.print(ENGINE_FUEL_RATE);
-  Serial.print(F(" | "));
-  Serial.print(fuelTMP);
-  Serial.println(F(" | "));
+  Serial.print(" | ");
+  Serial.print(tempFUEL);
+  Serial.println(" | ");
 }
 
 void reconnect()
@@ -480,7 +500,6 @@ void loop()
   vga.line(0, 91 , 198, 91, 6); // - line 2
 
   mainDisplay();
-
 
   while (SerialGPS.available() > 0)
     if (gps.encode(SerialGPS.read()))
