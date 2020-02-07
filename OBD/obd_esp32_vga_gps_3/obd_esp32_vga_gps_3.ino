@@ -180,7 +180,6 @@ void runtimeDraw()
   vga.setCursor(9, 50);
   vga.print("RUN");
   vga.setCursor(9, 66);
-//  vga.print(RUNTIME / 60, 3);
   vga.print(tempRUN);
 }
 
@@ -190,7 +189,6 @@ void distanceDraw()
   vga.setCursor(45, 50);
   vga.print("Dist");
   vga.setCursor(45, 66);
-//  vga.print(distance / 36000, 0);
   vga.print(tempDISTANCE);
 }
 
@@ -299,12 +297,12 @@ void sprintfDataCalcs()
   sprintf(tempSPEED, "%03d", gpsSpeed);
   sprintf(tempRPM , "%04d", RPM);
   sprintf(tempCOOLANT, "%03d", COOLANT);
-  sprintf(tempFUEL , "%.1f" , fuelTMP );
+  sprintf(tempFUEL , "%00.1f" , fuelTMP );
   sprintf(tempAMBIENT , "%02d", AMBIENT_TEMP );
 
   sprintf(tempRUN , "%03d" , RUNTIME / 60);
   sprintf(tempDISTANCE ,"%04d" , distance / 36000 );
-  sprintf(tempVOLTAGE, "%.1f", VOLTAGE);
+  sprintf(tempVOLTAGE, "%00.1f", VOLTAGE);
   sprintf(tempFUEL_LEVEL , "%02d", FUEL_LEVEL);
   sprintf(tempENGINE_OIL_TEMP, "%03d" , ENGINE_OIL_TEMP);
 
@@ -324,7 +322,6 @@ void sprintfDataCalcs()
   {
     gpsSpeed = 1;
   }
-
   if (fuelTMP <= 0) fuelTMP = 0.01;
   if (ENGINE_FUEL_RATE <= 0) ENGINE_FUEL_RATE = 0.01;
   fuelTMP = (ENGINE_FUEL_RATE / gpsSpeed) / 0.036;
