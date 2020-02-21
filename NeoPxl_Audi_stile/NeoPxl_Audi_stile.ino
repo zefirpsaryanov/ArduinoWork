@@ -16,7 +16,7 @@ void loop()
   strip.clear();
   colorWipeLeft(strip.Color(255, 80, 0), 60);
   strip.clear();
-  color2ways(strip.Color(255, 80, 0), 200);
+  color2ways(strip.Color(255, 80, 0), 120);
   strip.clear();
 
 }
