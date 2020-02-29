@@ -2,8 +2,8 @@
 // https://www.youtube.com/watch?v=ly5PToVtPfg&feature=emb_logo
 
 
-#define key1 5
-#define key2 6
+#define key1 12
+#define key2 4
 
 int in1 = 7;
 int in2 = 8;
@@ -51,8 +51,8 @@ void loop()
   int key1S = digitalRead(key1); // read if key1 is pressed
   int key2S = digitalRead(key2); // read if key2 is pressed
 
-  if (!key1S) TurnMotorA1();
-  if (!key2S) TurnMotorA2();
+  if (key1S) TurnMotorA1();
+  if (key2S) TurnMotorA2();
 
   delay(100);
 }
