@@ -5,7 +5,7 @@
 char auth[] = "5172b8b7bf814e63a2139c1dfe47a8a5";
 char ssid[] = "test";
 char pass[] = "1q2w3e4r";
-const int GP4 = D4;        //D4
+const int GP4 = 1;        //D4
 WidgetMap myMap(V1);
 
 void setup()
@@ -21,7 +21,7 @@ void setup()
 
   digitalWrite(GP4, HIGH);
 
-  Blynk.begin(auth, ssid, pass, IPAddress(192, 168, 10, 5), 8080);
+  Blynk.begin(auth, ssid, pass, IPAddress(192, 168, 10, 10), 8080);
 
 
   int index = 0;

@@ -41,7 +41,7 @@ void movement()
 {
   TurnMotorA1();
   digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(23500);
+  delay(25000);
   TurnOFFA();
   digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
   delay(260000);                     // change delay here (5 min - 50 sec = 260000 ms)
