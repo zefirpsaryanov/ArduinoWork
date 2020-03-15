@@ -149,15 +149,15 @@ void fuelDraw()
   vga.setTextColor(vga.RGB(255, 255, 255), vga.RGB(0, 0, 0)); // font color , background color font
   vga.setCursor(130, 5);
   vga.print("L/KM");
-  vga.setCursor(130, 21); 
+  vga.setCursor(130, 21);
   setColorByValue(fuelTMP, 5, 7, 9);
-  
+
   if (fuelTMP > 0)
   {
-   vga.print(tempFUEL);
-   vga.print(" ");
+    vga.print(tempFUEL);
+    vga.print(" ");
   }
-  else 
+  else
   {
     vga.print("0.0 ");
   }
@@ -301,7 +301,7 @@ void sprintfDataCalcs()
   sprintf(tempAMBIENT , "%02d", AMBIENT_TEMP );
 
   sprintf(tempRUN , "%03d" , RUNTIME / 60);
-  sprintf(tempDISTANCE ,"%04d" , distance / 36000 );
+  sprintf(tempDISTANCE , "%04d" , distance / 36000 );
   sprintf(tempVOLTAGE, "%00.1f", VOLTAGE);
   sprintf(tempFUEL_LEVEL , "%02d", FUEL_LEVEL);
   sprintf(tempENGINE_OIL_TEMP, "%03d" , ENGINE_OIL_TEMP);
@@ -483,11 +483,11 @@ void setup()
   vga.init(vga.MODE200x150, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
   vga.setFont(CodePage437_8x19);
 
-  //obd.begin();
-  //while (!obd.init());
+  obd.begin();
+  while (!obd.init());
 
   vga.clear();
-  //showDTC();
+  showDTC();
 }
 
 void loop()
@@ -501,7 +501,7 @@ void loop()
   while (SerialGPS.available() > 0)
     if (gps.encode(SerialGPS.read()))
     {
-      debugInfoGPS();
+      //debugInfoGPS();
       sprintfDataCalcs();
     }
 
@@ -511,23 +511,23 @@ void loop()
     while (true);
   }
 
-  //  static byte pids[] = {PID_RPM, PID_RUNTIME, PID_FUEL_LEVEL, PID_ENGINE_FUEL_RATE, PID_CONTROL_MODULE_VOLTAGE, PID_AMBIENT_TEMP, PID_COOLANT_TEMP, PID_ENGINE_OIL_TEMP};
-  //  static byte index = 0;
-  //  byte pid = pids[index];
-  //  int value;
-  //
-  //  send a query to OBD adapter for specified OBD - II pid
-  //
-  //  if (obd.readPID(pid, value))
-  //    {
-  //      readData(pid, value);
-  //    }
-  //
-  //  index = (index + 1) % sizeof(pids);
-  //
-  //  if (obd.errors >= 100)
-  //  {
-  //    reconnect();
-  //    setup();
-  //  }
+  static byte pids[] = {PID_RPM, PID_RUNTIME, PID_FUEL_LEVEL, PID_ENGINE_FUEL_RATE, PID_CONTROL_MODULE_VOLTAGE, PID_AMBIENT_TEMP, PID_COOLANT_TEMP, PID_ENGINE_OIL_TEMP};
+  static byte index = 0;
+  byte pid = pids[index];
+  int value;
+
+  send a query to OBD adapter for specified OBD - II pid
+
+  if (obd.readPID(pid, value))
+    {
+      readData(pid, value);
+    }
+
+  index = (index + 1) % sizeof(pids);
+
+  if (obd.errors >= 100)
+  {
+    reconnect();
+    setup();
+  }
 }

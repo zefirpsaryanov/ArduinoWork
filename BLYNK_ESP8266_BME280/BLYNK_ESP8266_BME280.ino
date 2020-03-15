@@ -8,24 +8,23 @@ char ssid[] = "test";
 char pass[] = "1q2w3e4r";
 
 Adafruit_BME280 bme;
+
 float h = 0;
 float t = 0;
 
 void setup()
 {
   Serial.begin(9600);
+  bme.begin(0x76);
   Blynk.begin(auth, ssid, pass, IPAddress(192, 168, 10, 10), 8080);
   //  Blynk.begin(auth, ssid, pass, IPAddress(217, 174, 61, 217), 9444);
-  bme.begin(0x76);
 }
 
 void loop()
 {
   Blynk.run();
-  t = bme.readTemperature();
   h = bme.readHumidity();
-  Serial.println(h);
-  Serial.println(t);
+  t = bme.readTemperature() - 1;
   Blynk.virtualWrite(V15, h);  //V5 is for Humidity
   Blynk.virtualWrite(V16, t);  //V6 is for Temperature
 }
