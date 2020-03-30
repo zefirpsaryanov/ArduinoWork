@@ -18,10 +18,7 @@ float t = 0;
 void setup()
 {
   Serial.begin(9600);
-
-  //  Wire.pins(SDA, SCL);
   Wire.begin(SDA, SCL);
-
   bme.begin(0x76);
   Blynk.begin(auth, ssid, pass, IPAddress(192, 168, 10, 10), 8080);
   //  Blynk.begin(auth, ssid, pass, IPAddress(217, 174, 61, 217), 9444);
