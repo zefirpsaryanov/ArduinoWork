@@ -1,26 +1,4 @@
 /*
-  This is an example of how to use the OLED 128x64 I2C with SSD1306 driver using the Adafruit library.
-  It also applies to the 128x32 version, but not all components would fit the smaller screen.
-
-  Pins:
-   GND = GND
-   VCC = 3.3 V
-   SCL = 2
-   SDA = 0
-
-  You can connect VCC to 3.3V to reduce the amount of high pitched noise that the display produces.
-
-  It's a good idea to put a resistor between A4-5V and A5-5V to help stabilize the connection.
-  What that does is pull-up the I2C pins to make it more reliable and prevents lock-ups.
-
-  Libraries needed:
-  https://github.com/adafruit/Adafruit_SSD1306
-  https://github.com/adafruit/Adafruit-GFX-Library
-
-  Guide for the GFX Library: https://cdn-learn.adafruit.com/downloads/pdf/adafruit-gfx-graphics-library.pdf
-
-  List of fonts: https://learn.adafruit.com/adafruit-gfx-graphics-library/using-fonts
-
   List of fonts that support right alignment:
   FreeMono9pt7b.h
   FreeMono12pt7b.h
@@ -38,7 +16,6 @@
   FreeMonoOblique12pt7b.h
   FreeMonoOblique18pt7b.h
   FreeMonoOblique24pt7b.h
-
 */
 
 
@@ -49,10 +26,11 @@
 #include <Adafruit_GFX.h>  // Include core graphics library for the display
 #include <Adafruit_SSD1306.h>  // Include Adafruit_SSD1306 library to drive the display
 #include <Fonts/FreeMono9pt7b.h>  // Add a custom font
-
-#define BLYNK_PRINT Serial
 #include <BlynkSimpleEsp8266.h>
 #include <Adafruit_BME280.h>
+
+#define BLYNK_PRINT Serial
+
 
 char auth[] = "1a589190cd0e42caa727ea338ed16790";
 
@@ -70,10 +48,11 @@ WiFiUDP Udp;
 unsigned int localPort = 8888;  // local port to listen for UDP packets
 time_t getNtpTime();
 void sendNTPpacket(IPAddress &address);
+
 char timeToString[20];
 char dateToString[20];
-String dayofweek;
 
+String dayofweek;
 
 float h = 0;
 float t = 0;
@@ -119,9 +98,6 @@ void setup()  // Start of setup
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(100);
-
-    display32.clearDisplay();  // Clear the buffer display 128*32
-    display64.clearDisplay();  // Clear the buffer display 128*64
 
     display32.setCursor(3, 25);  // (x,y)
     display32.print(".");  // Text or value to
@@ -172,7 +148,7 @@ void loop()  // Start of loop
     if (now() != prevDisplay)
     { //update the display only if time has changed
       prevDisplay = now();
-      sprintfDataCalcs();
+      sprintfData();
     }
   }
 
@@ -249,15 +225,15 @@ void sendNTPpacket(IPAddress &address)
   Udp.endPacket();
 }
 
-void sprintfDataCalcs()
+void sprintfData()
 {
   sprintf(timeToString, "%02d:%02d:%02d", hour() + 1, minute(), second());
   sprintf(dateToString, "%02d.%02d.%d", day(), month(), year());
-  if (weekday() == 1) dayofweek = "SUN";
-  if (weekday() == 2) dayofweek = "MON";
-  if (weekday() == 3) dayofweek = "TUE";
-  if (weekday() == 4) dayofweek = "WED";
-  if (weekday() == 5) dayofweek = "THU";
-  if (weekday() == 6) dayofweek = "FRI";
-  if (weekday() == 7) dayofweek = "SAT";
+  if (weekday() == 1) dayofweek = "Sunday";
+  if (weekday() == 2) dayofweek = "Monday";
+  if (weekday() == 3) dayofweek = "Tuesday";
+  if (weekday() == 4) dayofweek = "Wednesday";
+  if (weekday() == 5) dayofweek = "Thursday";
+  if (weekday() == 6) dayofweek = "Friday";
+  if (weekday() == 7) dayofweek = "Saturday";
 }
