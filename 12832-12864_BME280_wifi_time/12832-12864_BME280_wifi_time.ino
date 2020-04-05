@@ -28,8 +28,9 @@
 #include <BlynkSimpleEsp8266.h>
 #include <Adafruit_BME280.h>
 
-#define BLYNK_PRINT Serial
+#define SEALEVELPRESSURE_HPA (1013.25)
 
+#define BLYNK_PRINT Serial
 
 char auth[] = "1a589190cd0e42caa727ea338ed16790";
 
@@ -53,14 +54,16 @@ char dateToString[20];
 
 String dayofweek;
 
-float h = 0;
-float t = 0;
+float h , t , p, a = 0;
 
 void setup()  // Start of setup
 {
   Serial.begin(9600);
   Wire.pins(0, 2);
   bme.begin(0x76);
+  
+  pinMode(1, OUTPUT); //TX->GPIO_01 BLASTER **** INPUT, OUTPUT, or INPUT_PULLUP 
+  pinMode(3, INPUT);  //RX->GPIO_03 RECEIVER
 
   /*-------- display start--------*/
   display32.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Initialize display with the I2C address of 0x3C , Create display 128*32
@@ -97,15 +100,6 @@ void setup()  // Start of setup
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(100);
-
-    display32.setCursor(3, 25);  // (x,y)
-    display32.print(".");  // Text or value to
-
-    display64.setCursor(3, 25);  // (x,y)
-    display64.print("."); // Text or value to print
-
-    display32.display();  // Print everything we set previously
-    display64.display();  // Print everything we set previously
   }
 
   Udp.begin(localPort);
@@ -127,19 +121,22 @@ void loop()  // Start of loop
   display32.clearDisplay();  // Clear the display so we can refresh
   display64.clearDisplay();  // Clear the display so we can refresh
 
-  display32.setCursor(3, 10);  // (x,y)
+  display32.setCursor(0, 10);  // (x,y)
   display32.println(t);  // Text or value to print
 
-  display32.setCursor(3, 25);  // (x,y)
+  display32.setCursor(0, 25);  // (x,y)
   display32.println(h);  // Text or value to
 
-  display64.setCursor(3, 10);  // (x,y)
+  display32.setCursor(60, 10);  // (x,y)
+  display32.println(p);  // Text or value to print
+
+  display64.setCursor(0, 10);  // (x,y)
   display64.println(timeToString); // Text or value to print
 
-  display64.setCursor(3, 25);  // (x,y)
+  display64.setCursor(0, 25);  // (x,y)
   display64.println(dateToString); // Text or value to print
 
-  display64.setCursor(3, 40);  // (x,y)
+  display64.setCursor(0, 40);  // (x,y)
   display64.println(dayofweek); // Text or value to print
 
   if (timeStatus() != timeNotSet)
@@ -152,14 +149,18 @@ void loop()  // Start of loop
   }
 
   Blynk.run();
+
   h = bme.readHumidity();
   t = bme.readTemperature() - 1;
-  Blynk.virtualWrite(V15, h);
-  Blynk.virtualWrite(V16, t);
+  p = bme.readPressure() / 100.0F;
 
-  Blynk.virtualWrite(V17, timeToString);
-  Blynk.virtualWrite(V18, dateToString);
-  Blynk.virtualWrite(V19, dayofweek);
+  Blynk.virtualWrite(V20, h);
+  Blynk.virtualWrite(V21, t);
+  Blynk.virtualWrite(V22, p);
+
+  Blynk.virtualWrite(V23, timeToString);
+  Blynk.virtualWrite(V24, dateToString);
+  Blynk.virtualWrite(V25, dayofweek);
 
   display32.display();  // Print everything we set previously
   display64.display();  // Print everything we set previously
@@ -226,7 +227,7 @@ void sendNTPpacket(IPAddress &address)
 
 void sprintfData()
 {
-  sprintf(timeToString, "%02d:%02d:%02d", hour() + 1, minute(), second());
+  sprintf(timeToString, "%02d:%02d:%02d" , hour() + 1, minute(), second());
   sprintf(dateToString, "%02d.%02d.%d", day(), month(), year());
   if (weekday() == 1) dayofweek = "Sunday";
   if (weekday() == 2) dayofweek = "Monday";
