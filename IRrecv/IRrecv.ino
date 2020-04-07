@@ -105,12 +105,10 @@ void loop()
     {
       Serial.print("DENON: ");
     }
-
     else if (results.decode_type == UNKNOWN)
     {
       Serial.print("UNKNOWN: ");
     }
-
     serialPrintUint64(results.value, HEX);
     Serial.println("");
     irrecv.resume();  // Receive the next value

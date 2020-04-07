@@ -4,7 +4,6 @@
 #include <BLEDevice.h>
 #include <BLEServer.h>
 
-
 #include <Adafruit_NeoPixel.h>
 #define PIN    2
 #define N_LEDS 8
