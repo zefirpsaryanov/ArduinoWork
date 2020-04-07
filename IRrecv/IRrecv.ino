@@ -41,20 +41,76 @@ void setup()
   Serial.println(kRecvPin);
 }
 
-void loop() 
+void loop()
 {
-  if (irrecv.decode(&results)) {
-    if (results.decode_type == NEC) {
+  if (irrecv.decode(&results))
+  {
+    if (results.decode_type == NEC)
+    {
       Serial.print("NEC: ");
-    } else if (results.decode_type == SONY) {
+    }
+    else if (results.decode_type == SONY)
+    {
       Serial.print("SONY: ");
-    } else if (results.decode_type == RC5) {
+    }
+    else if (results.decode_type == RC5)
+    {
       Serial.print("RC5: ");
-    } else if (results.decode_type == RC6) {
+    }
+    else if (results.decode_type == RC6)
+    {
       Serial.print("RC6: ");
-    } else if (results.decode_type == UNKNOWN) {
+    }
+    else if (results.decode_type == DISH)
+    {
+      Serial.print("DISH: ");
+    }
+    else if (results.decode_type == SHARP)
+    {
+      Serial.print("SHARP: ");
+    }
+    else if (results.decode_type == JVC)
+    {
+      Serial.print("JVC: ");
+    }
+    else if (results.decode_type == SANYO)
+    {
+      Serial.print("SANYO: ");
+    }
+    else if (results.decode_type == MITSUBISHI)
+    {
+      Serial.print("MITSUBISHI: ");
+    }
+    else if (results.decode_type == SAMSUNG)
+    {
+      Serial.print("SAMSUNG: ");
+    }
+    else if (results.decode_type == LG)
+    {
+      Serial.print("LG: ");
+    }
+    else if (results.decode_type == WHYNTER)
+    {
+      Serial.print("WHYNTER: ");
+    }
+    else if (results.decode_type == AIWA_RC_T501)
+    {
+      Serial.print("AIWA_RC_T501: ");
+    }
+    else if (results.decode_type == PANASONIC)
+    {
+      Serial.print("PANASONIC: ");
+    }
+    else if (results.decode_type == DENON)
+    {
+      Serial.print("DENON: ");
+    }
+
+    else if (results.decode_type == UNKNOWN)
+    {
       Serial.print("UNKNOWN: ");
     }
+
     serialPrintUint64(results.value, HEX);
     Serial.println("");
     irrecv.resume();  // Receive the next value

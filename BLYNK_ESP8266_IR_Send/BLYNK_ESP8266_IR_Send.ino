@@ -6,7 +6,7 @@
 #include <IRremoteESP8266.h>
 #include <IRsend.h>
 
-const uint16_t kIrLed = 0;
+const uint16_t kIrLed = 3;
 
 IRsend irsend(kIrLed);
 
@@ -18,7 +18,7 @@ void setup()
 {
   Serial.begin(115200);
   irsend.begin();
-  pinMode(0, OUTPUT);
+  //pinMode(1, OUTPUT);
 
   Blynk.begin(auth, ssid, pass, IPAddress(192, 168, 10, 10), 8080);
 }
@@ -33,7 +33,7 @@ BLYNK_WRITE(V0)
   int pinValue = param.asInt(); // Assigning incoming value from pin V0 to a variable
   if (pinValue == 1)
   {
-    irsend.sendNEC(0x2FD48B7, 28); // NEC: 2FD48B7 - TOSHIBA POWER
+    irsend.sendNEC(0x2FD48B7, 32); // NEC: 2FD48B7 - TOSHIBA POWER
   }
 }
 BLYNK_WRITE(V1)
