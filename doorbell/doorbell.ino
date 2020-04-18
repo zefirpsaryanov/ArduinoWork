@@ -1,3 +1,7 @@
+#define key1  2
+#define buzzerPin 12
+#define key1_led 0
+
 const int c = 261;
 const int d = 294;
 const int e = 329;
@@ -18,24 +22,37 @@ const int gH = 784;
 const int gSH = 830;
 const int aH = 880;
 
-
-const int buzzerPin = 6;
-const int button_led = 7;
-const int button = 9;
-
-int buttonStatus;
 int counter = 0;
 
 void setup()
 {
   Serial.begin(9600);
+  pinMode(key1, INPUT_PULLUP);// set pin as input
   pinMode(buzzerPin, OUTPUT);
-  pinMode(button_led, HIGH);
-  pinMode(button, INPUT_PULLUP);
+
+  pinMode(key1_led, OUTPUT);
+  digitalWrite(key1_led, HIGH);
+}
+
+void loop()
+{
+  int key1S = digitalRead(key1);
+
+  if (!key1S)
+    ring();
+    
+  else
+  {
+    noTone(buzzerPin);
+    digitalWrite(key1_led, HIGH);
+  }
+  
+  delay(100);
 }
 
 void ring()
 {
+
   //Play first section
   firstSection();
 
@@ -70,30 +87,24 @@ void ring()
   delay(650);
 }
 
-void loop()
-{
-  buttonStatus = digitalRead(button);
-
-  if (buttonStatus == HIGH)
-  {
-    ring();
-    buttonStatus = LOW;
-    pinMode(button_led, LOW);
-    delay(100);
-  }
-  else
-  {
-    digitalWrite(buzzerPin, LOW);
-    pinMode(button_led, HIGH);
-    delay(100);
-  }
-}
-
-
 void beep(int note, int duration)
 {
   //Play tone on buzzerPin
   tone(buzzerPin, note, duration);
+
+  //Play different LED depending on value of 'counter'
+  if (counter % 2 == 0)
+  {
+    digitalWrite(key1_led, HIGH);
+    delay(duration);
+    digitalWrite(key1_led, LOW);
+  }
+  else
+  {
+    digitalWrite(key1_led, HIGH);
+    delay(duration);
+    digitalWrite(key1_led, LOW);
+  }
 
   //Stop tone on buzzerPin
   noTone(buzzerPin);

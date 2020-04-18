@@ -1,5 +1,5 @@
 #include <Adafruit_NeoPixel.h>
-#define LED_PIN     5
+#define LED_PIN     15
 #define LED_COUNT   8
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -19,6 +19,9 @@ void loop()
   color2ways(strip.Color(255, 80, 0), 120);
   strip.clear();
 
+  singleLed();
+  delay(1000);
+  strip.clear();
 }
 
 void colorWipeRight(int color, int wait)
@@ -56,5 +59,6 @@ void color2ways(int color, int wait)
 void singleLed()
 {
   strip.setPixelColor(0, 255, 255, 255); // Set pixel , R , G , B
+  strip.setPixelColor(7, 255, 255, 255); // Set pixel , R , G , B
   strip.show();
 }
