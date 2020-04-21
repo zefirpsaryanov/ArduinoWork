@@ -42,8 +42,8 @@ void setup()  // Start of setup
   Serial.begin(9600);
   Wire.pins(0, 2);
   bme.begin(0x76);
-  
-  pinMode(1, OUTPUT); //TX->GPIO_01 BLASTER **** INPUT, OUTPUT, or INPUT_PULLUP 
+
+  pinMode(1, OUTPUT); //TX->GPIO_01 BLASTER **** INPUT, OUTPUT, or INPUT_PULLUP
   pinMode(3, INPUT);  //RX->GPIO_03 RECEIVER
 
   /*-------- display start--------*/
@@ -75,7 +75,7 @@ void setup()  // Start of setup
   display64.display();  // Print everything we set previously
 
   /*-------- display end--------*/
-
+  WiFi.hostname("ESP01_indor");
   Blynk.begin(auth, ssid, pass, IPAddress(192, 168, 10, 10), 8080);
 
   while (WiFi.status() != WL_CONNECTED)

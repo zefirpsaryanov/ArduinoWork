@@ -56,7 +56,16 @@
 
 
 // A custom glyph (a smiley)...
-static const byte glyph[] = { B00010000, B00110100, B00110000, B00110100, B00010000 };
+static const byte glyph[] = {
+	0b00000,
+	0b01010,
+	0b11111,
+	0b11111,
+	0b01110,
+	0b00100,
+	0b00000,
+	0b00000
+};
 
 
 static PCD8544 lcd;
@@ -81,11 +90,11 @@ void loop() {
 
   // Write a piece of text on the first line...
   lcd.setCursor(0, 2);
-  lcd.print("niq_ro made");
+  lcd.print("123");
 
   // Write a piece of text on the second line...
   lcd.setCursor(0, 3);
-  lcd.print("tehnic.go.ro  ");
+  lcd.print("456");
    lcd.setCursor(0, 4);
   lcd.print("              ");
 
@@ -98,16 +107,16 @@ void loop() {
 
   // Write a piece of text on thirdh and fourth line...
   lcd.setCursor(0, 3);
-  lcd.print("niqro.3x.ro    ");
+  lcd.print("789");
   lcd.setCursor(0, 4);
   lcd.print("              ");
   delay(2000);  
 
   // Write a piece of text on thirdh and fourth line...
   lcd.setCursor(0, 3);
-  lcd.print("nicuflorica.   ");
+  lcd.print("159");
   lcd.setCursor(17, 4);
-  lcd.print("blogspot.ro");
+  lcd.print("357");
   delay(2000); 
 
 

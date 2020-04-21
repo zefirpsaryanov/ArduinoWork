@@ -1,7 +1,7 @@
-#define key1  2
-#define buzzerPin 12
-#define key1_led 0
-
+#define key1  2//2
+#define buzzerPin 4//12
+#define key1_led 3 //0
+// nano
 const int c = 261;
 const int d = 294;
 const int e = 329;
@@ -31,7 +31,7 @@ void setup()
   pinMode(buzzerPin, OUTPUT);
 
   pinMode(key1_led, OUTPUT);
-  digitalWrite(key1_led, HIGH);
+  analogWrite(key1_led, 5);
 }
 
 void loop()
@@ -42,11 +42,8 @@ void loop()
     ring();
     
   else
-  {
-    noTone(buzzerPin);
-    digitalWrite(key1_led, HIGH);
-  }
-  
+  analogWrite(key1_led, 5);
+
   delay(100);
 }
 
@@ -95,15 +92,15 @@ void beep(int note, int duration)
   //Play different LED depending on value of 'counter'
   if (counter % 2 == 0)
   {
-    digitalWrite(key1_led, HIGH);
+  analogWrite(key1_led, 50);
     delay(duration);
-    digitalWrite(key1_led, LOW);
+  analogWrite(key1_led, 10);
   }
   else
   {
-    digitalWrite(key1_led, HIGH);
+  analogWrite(key1_led, 50);
     delay(duration);
-    digitalWrite(key1_led, LOW);
+  analogWrite(key1_led, 10);
   }
 
   //Stop tone on buzzerPin

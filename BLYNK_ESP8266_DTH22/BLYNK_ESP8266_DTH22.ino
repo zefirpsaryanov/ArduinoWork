@@ -15,15 +15,14 @@ void setup()
 {
   Serial.begin(9600);
   dht.begin();
+  WiFi.setPhyMode(WIFI_PHY_MODE_11B);
+  WiFi.hostname("ESP01-outdoor");
   Blynk.begin(auth, ssid, pass, IPAddress(192, 168, 10, 10), 8080);
 }
 
 void loop()
 {
   Blynk.run();
-
-  Blynk.virtualWrite(V1, dht.readHumidity());
-  Blynk.virtualWrite(V2, dht.readTemperature());
-  //Serial.println(dht.readHumidity());
-  //Serial.println(dht.readTemperature());
+  Blynk.virtualWrite(V1, dht.readHumidity() - 7);
+  Blynk.virtualWrite(V2, dht.readTemperature() - 1);
 }

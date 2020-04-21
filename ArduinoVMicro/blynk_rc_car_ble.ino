@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <analogWrite.h>
 
+
 #include <BlynkSimpleEsp32_BLE.h>
 #include <BLEDevice.h>
 #include <BLEServer.h>
@@ -40,10 +41,15 @@ int BRIGHTNESS;
 
 CRGB leds[NUM_LEDS];
 
+
+String inputString = "";         // a String to hold incoming data
+bool stringComplete = false;  // whether the string is complete
+
+
 void setup()
 {
 	Serial.begin(9600);
-
+	
 	Blynk.setDeviceName("Blynk RC Car");
 	Blynk.begin(auth);
 
@@ -62,12 +68,18 @@ void setup()
 	pinMode(MOTOR2_IN2, OUTPUT);
 
 	FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+	BRIGHTNESS = 10;
+
+	inputString.reserve(200);
 }
 
 void loop()
 {
 	Blynk.run();
 	ledStrip();
+	readyOrNot();
+
+
 
 #if debugInfo
 
@@ -102,6 +114,25 @@ void loop()
 
 #endif
 }
+
+void readyOrNot()
+{
+	if (stringComplete)
+	{
+		if (inputString.startsWith("Ready"))
+		{
+			digitalWrite(LED_BUILTIN, HIGH); // Turn LED ON.
+		}
+		if (inputString.startsWith("Disconnected"))
+		{
+			digitalWrite(LED_BUILTIN, LOW); // Turn LED OFF.
+		}
+		inputString = "";
+		stringComplete = false;
+	}
+	Serial.print(inputString);
+}
+
 
 BLYNK_CONNECTED()
 {

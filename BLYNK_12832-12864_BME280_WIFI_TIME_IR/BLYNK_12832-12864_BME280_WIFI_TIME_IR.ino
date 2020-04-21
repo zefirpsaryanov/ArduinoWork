@@ -5,7 +5,6 @@
 #include <WiFiUdp.h>
 #include <TimeLib.h>
 
-
 #include <Adafruit_GFX.h>  // Include core graphics library for the display
 #include <Adafruit_SSD1306.h>  // Include Adafruit_SSD1306 library to drive the display
 #include <Fonts/FreeMono9pt7b.h>  // Add a custom font
@@ -13,7 +12,6 @@
 #include <BlynkSimpleEsp8266.h>
 
 #include <Adafruit_BME280.h>
-
 
 #include <IRremoteESP8266.h>
 #include <IRsend.h>
@@ -45,7 +43,7 @@ char timeToString[20];
 char dateToString[20];
 String dayofweek;
 
-float h , t , p, a = 0;
+float h , t , p = 0;
 
 void setup()  // Start of setup
 {
@@ -86,12 +84,8 @@ void setup()  // Start of setup
 
   /*-------- display end--------*/
 
+  WiFi.hostname("ESP01-indor");
   Blynk.begin(auth, ssid, pass, IPAddress(192, 168, 10, 10), 8080);
-
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(100);
-  }
 
   Udp.begin(localPort);
   setSyncProvider(getNtpTime);
@@ -235,6 +229,7 @@ BLYNK_WRITE(V0)
   if (pinValue == 1)
   {
     irsend.sendNEC(0x2FD48B7, 32); // NEC: 2FD48B7 - TOSHIBA POWER
+    irsend.sendNEC(0xFFFFFFFFFFFFFFFF, 32); // NEC: 2FD48B7 - TOSHIBA POWER
   }
 }
 BLYNK_WRITE(V1)
