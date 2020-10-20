@@ -107,7 +107,7 @@ void loop() {
             // Web Page Heading
             client.println("<body><h1>ESP8266 Web Server</h1>");
 
-            client.println("<input type=submit name=center value=\"reset\"/>");
+            //client.println("<input type=submit name=center value=\"reset\" onclick=\"/reset\" />");
 
 
 

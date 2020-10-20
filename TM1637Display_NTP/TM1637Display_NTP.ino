@@ -1,31 +1,22 @@
-/*
-   TimeNTP_ESP8266WiFi.ino
-   Example showing time sync to NTP time source
-
-   This sketch uses the ESP8266WiFi library
-*/
+#include <Arduino.h>
+#include <TM1637Display.h>
 
 #include <TimeLib.h>
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
-#include <SPI.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_ILI9341.h>
+#define CLK D6
+#define DIO D5
 
-const char ssid[] = "test";
-const char pass[] = "1q2w3e4r";
+TM1637Display display(CLK, DIO);
 
-#define TFT_CS D0  //for D1 mini or TFT I2C Connector Shield (V1.1.0 or later)
-#define TFT_DC D8  //for D1 mini or TFT I2C Connector Shield (V1.1.0 or later)
-#define TFT_RST -1 //for D1 mini or TFT I2C Connector Shield (V1.1.0 or later)
-#define TS_CS D3   //for D1 mini or TFT I2C Connector Shield (V1.1.0 or later)
+const char ssid[] = "test";  //  your network SSID (name)
+const char pass[] = "1q2w3e4r";       // your network password
 
-Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 
 // NTP Servers:
-static const char ntpServerName[] = "ntp.comnet.bg";
-const int timeZone = 2;     // Central European Time
+static const char ntpServerName[] = "us.pool.ntp.org";
+const int timeZone = 3;     // Central European Time
 
 WiFiUDP Udp;
 unsigned int localPort = 8888;  // local port to listen for UDP packets
@@ -33,16 +24,11 @@ unsigned int localPort = 8888;  // local port to listen for UDP packets
 time_t getNtpTime();
 void digitalClockDisplay();
 void printDigits(int digits);
-void printTftDigits(int digit);
 void sendNTPpacket(IPAddress &address);
 
 void setup()
 {
   Serial.begin(9600);
-
-  tft.begin();
-  tft.fillScreen(ILI9341_BLACK);
-
   while (!Serial) ; // Needed for Leonardo only
   delay(250);
   Serial.println("TimeNTP Example");
@@ -64,71 +50,36 @@ void setup()
   Serial.println("waiting for sync");
   setSyncProvider(getNtpTime);
   setSyncInterval(300);
+
+  display.setBrightness(0);
+  // Clear the display:
+  display.clear();
 }
 
 time_t prevDisplay = 0; // when the digital clock was displayed
 
 void loop()
 {
-  if (timeStatus() != timeNotSet)
-  {
-    if (now() != prevDisplay)
-    { //update the display only if time has changed
+  if (timeStatus() != timeNotSet) {
+    if (now() != prevDisplay) { //update the display only if time has changed
       prevDisplay = now();
+      displayTime();
       digitalClockDisplay();
-      TFTClockDisplay();
     }
   }
 }
 
 
-void TFTClockDisplay()
+void displayTime()
 {
-  tft.setRotation(1);
-
-  tft.setTextColor(ILI9341_ORANGE, ILI9341_BLACK);
-  tft.setTextSize(2);
-  tft.setCursor(0, 0);
-
-  hour() < 10 ?  tft.print("0" + (String)hour()) : tft.print(hour());
-  tft.print(":");
-  minute() < 10 ?  tft.print("0" + (String)minute()) : tft.print(minute());
-  tft.print(":");
-  second() < 10 ?  tft.print("0" + (String)second()) : tft.print(second());
-  tft.println(" ");
-  day() < 10 ?  tft.print("0" + (String)day()) : tft.print(day());
-  tft.print(".");
-  month() < 10 ?  tft.print("0" + (String)month()) : tft.print(month());
-  tft.print(".");
-  year() < 10 ?  tft.print("0" + (String)year()) : tft.print(year());
-  tft.println(" ");
-
-  if (weekday() == 1) tft.println("Sunday");
-  if (weekday() == 2) tft.println("Monday");
-  if (weekday() == 3) tft.println("Tuesday");
-  if (weekday() == 4) tft.println("Wednesday");
-  if (weekday() == 5) tft.println("Thursday");
-  if (weekday() == 6) tft.println("Friday");
-  if (weekday() == 7) tft.println("Saturday");
-  tft.println(" ");
-
-  printTftDigit(hour());
-  tft.print(":");
-  printTftDigit(minute());
-  tft.print(":");
-  printTftDigit(second());
-  tft.println(" ");
-
-  printTftDigit(day());
-  tft.print(".");
-  printTftDigit(month());
-  tft.print(".");
-  printTftDigit(year());
-  tft.println(" ");
-
-  //  tft.println("TEXT TEXT");
-  //  tft.drawLine(60,70,80,90,ILI9341_WHITE);
-  //  tft.fillCircle(120, 220, 60, ILI9341_WHITE);
+  // Create time format to display:
+  int displaytime = (hour() * 100) + minute();
+  // Display the current time in 24 hour format with leading zeros enabled and a center colon:
+  display.showNumberDecEx(displaytime, 0b11100000, true);
+  // Remove the following lines of code if you want a static instead of a blinking center colon:
+  delay(1000);
+  display.showNumberDec(displaytime, true); // Prints displaytime without center colon.
+  delay(1000);
 }
 
 
@@ -155,15 +106,6 @@ void printDigits(int digits)
     Serial.print('0');
   Serial.print(digits);
 }
-
-void printTftDigit(int digit)
-{
-  // utility for digital clock display: prints preceding colon and leading 0
-  if (digit < 10)
-    tft.print('0');
-  tft.print(digit);
-}
-
 
 /*-------- NTP code ----------*/
 

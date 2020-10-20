@@ -1,15 +1,17 @@
+
 #include <TimeLib.h>
-#include <WiFi.h>
+#include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
+#include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 #include <XPT2046_Touchscreen.h>
 
-#define TFT_CS 14  //for D32 Pro
-#define TFT_DC 27  //for D32 Pro
-#define TFT_RST 33 //for D32 Pro
-#define TS_CS 12   //for D32 Pro
+#define TFT_CS D0  //for D1 mini or TFT I2C Connector Shield (V1.1.0 or later)
+#define TFT_DC D8  //for D1 mini or TFT I2C Connector Shield (V1.1.0 or later)
+#define TFT_RST -1 //for D1 mini or TFT I2C Connector Shield (V1.1.0 or later)
+#define TS_CS D3   //for D1 mini or TFT I2C Connector Shield (V1.1.0 or later)
 
 // This is calibration data for the raw touch data to the screen coordinates
 #define TS_MINX 150
@@ -233,13 +235,13 @@ void drawMainDisplay()
   tft.drawFastVLine(0, 0, 320, ILI9341_CYAN);
   tft.drawFastVLine(239, 0, 320, ILI9341_CYAN);
 
-//  tft.drawFastVLine(39, 239, 80, ILI9341_CYAN);
-//  tft.setCursor(clockCenterX - 110, clockCenterY + 140); tft.print((char)174);
-//  tft.setCursor(clockCenterX - 110, clockCenterY + 160); tft.print((char)174);
-//
-//  tft.drawFastVLine(199, 239, 80, ILI9341_CYAN);
-//  tft.setCursor(clockCenterX + 110, clockCenterY + 140); tft.print((char)175);
-//  tft.setCursor(clockCenterX + 110, clockCenterY + 160); tft.print((char)175);
+  //  tft.drawFastVLine(39, 239, 80, ILI9341_CYAN);
+  //  tft.setCursor(clockCenterX - 110, clockCenterY + 140); tft.print((char)174);
+  //  tft.setCursor(clockCenterX - 110, clockCenterY + 160); tft.print((char)174);
+  //
+  //  tft.drawFastVLine(199, 239, 80, ILI9341_CYAN);
+  //  tft.setCursor(clockCenterX + 110, clockCenterY + 140); tft.print((char)175);
+  //  tft.setCursor(clockCenterX + 110, clockCenterY + 160); tft.print((char)175);
 
 
   tft.drawFastHLine(0, 0, 239, ILI9341_CYAN);

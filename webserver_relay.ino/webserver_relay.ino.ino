@@ -1,14 +1,14 @@
 /*********
   Rui Santos
-  Complete project details at http://randomnerdtutorials.com  
+  Complete project details at http://randomnerdtutorials.com
 *********/
 
 // Load Wi-Fi library
 #include <ESP8266WiFi.h>
 
 // Replace with your network credentials
-const char* ssid     = "test";
-const char* password = "1q2w3e4r";
+const char* ssid     = "service1384";
+const char* password = "1384service";
 
 // Set web server port number to 80
 WiFiServer server(80);
@@ -17,17 +17,17 @@ WiFiServer server(80);
 String header;
 
 // Auxiliar variables to store the current output state
-String output5State = "off";
-String output4State = "off";
+String output5State = "on";
+String output4State = "on";
 
 // Assign output variables to GPIO pins
-const int output5 = 0;
-const int output4 = 2;
+const int output5 = 5;
+const int output4 = 4;
 
 // Current time
 unsigned long currentTime = millis();
 // Previous time
-unsigned long previousTime = 0; 
+unsigned long previousTime = 0;
 // Define timeout time in milliseconds (example: 2000ms = 2s)
 const long timeoutTime = 2000;
 
@@ -37,8 +37,9 @@ void setup() {
   pinMode(output5, OUTPUT);
   pinMode(output4, OUTPUT);
   // Set outputs to LOW
-  digitalWrite(output5, LOW);
-  digitalWrite(output4, LOW);
+  digitalWrite(output5, HIGH);
+  digitalWrite(output4, HIGH);
+  WiFi.softAPdisconnect (true);
 
   // Connect to Wi-Fi network with SSID and password
   Serial.print("Connecting to ");
@@ -56,7 +57,7 @@ void setup() {
   server.begin();
 }
 
-void loop(){
+void loop() {
   WiFiClient client = server.available();   // Listen for incoming clients
 
   if (client) {                             // If a new client connects,
@@ -65,7 +66,7 @@ void loop(){
     currentTime = millis();
     previousTime = currentTime;
     while (client.connected() && currentTime - previousTime <= timeoutTime) { // loop while the client's connected
-      currentTime = millis();         
+      currentTime = millis();
       if (client.available()) {             // if there's bytes to read from the client,
         char c = client.read();             // read a byte, then
         Serial.write(c);                    // print it out the serial monitor
@@ -80,7 +81,7 @@ void loop(){
             client.println("Content-type:text/html");
             client.println("Connection: close");
             client.println();
-            
+
             // turns the GPIOs on and off
             if (header.indexOf("GET /5/on") >= 0) {
               Serial.println("GPIO 5 on");
@@ -99,40 +100,40 @@ void loop(){
               output4State = "off";
               digitalWrite(output4, LOW);
             }
-            
+
             // Display the HTML web page
             client.println("<!DOCTYPE html><html>");
             client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
             client.println("<link rel=\"icon\" href=\"data:,\">");
-            // CSS to style the on/off buttons 
+            // CSS to style the on/off buttons
             // Feel free to change the background-color and font-size attributes to fit your preferences
             client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
-            client.println(".button { background-color: #195B6A; border: none; color: white; padding: 16px 40px;");
+            client.println(".button { background-color: #008000; border: none; color: white; padding: 16px 40px;");
             client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
-            client.println(".button2 {background-color: #77878A;}</style></head>");
-            
+            client.println(".button2 {background-color: #FF0000;}</style></head>");
+
             // Web Page Heading
-            client.println("<body><h1>ESP8266 Web Server</h1>");
-            
-            // Display current state, and ON/OFF buttons for GPIO 5  
-            client.println("<p>GPIO 5 - State " + output5State + "</p>");
-            // If the output5State is off, it displays the ON button       
-            if (output5State=="off") {
-              client.println("<p><a href=\"/5/on\"><button class=\"button\">ON</button></a></p>");
+            client.println("<body><h1>Relay Web Services</h1>");
+
+            // Display current state, and ON/OFF buttons for GPIO 5
+            client.println("<p>Relay 5 - State " + output5State + "</p>");
+            // If the output5State is off, it displays the ON button
+            if (output5State == "off") {
+              client.println("<p><a href=\"/5/on\"><button class=\"button\">START</button></a></p>");
             } else {
-              client.println("<p><a href=\"/5/off\"><button class=\"button button2\">OFF</button></a></p>");
-            } 
-               
-            // Display current state, and ON/OFF buttons for GPIO 4  
-            client.println("<p>GPIO 4 - State " + output4State + "</p>");
-            // If the output4State is off, it displays the ON button       
-            if (output4State=="off") {
-              client.println("<p><a href=\"/4/on\"><button class=\"button\">ON</button></a></p>");
+              client.println("<p><a href=\"/5/off\"><button class=\"button button2\">STOP</button></a></p>");
+            }
+
+            // Display current state, and ON/OFF buttons for GPIO 4
+            client.println("<p>Relay 4 - State " + output4State + "</p>");
+            // If the output4State is off, it displays the ON button
+            if (output4State == "off") {
+              client.println("<p><a href=\"/4/on\"><button class=\"button\">START</button></a></p>");
             } else {
-              client.println("<p><a href=\"/4/off\"><button class=\"button button2\">OFF</button></a></p>");
+              client.println("<p><a href=\"/4/off\"><button class=\"button button2\">STOP</button></a></p>");
             }
             client.println("</body></html>");
-            
+
             // The HTTP response ends with another blank line
             client.println();
             // Break out of the while loop

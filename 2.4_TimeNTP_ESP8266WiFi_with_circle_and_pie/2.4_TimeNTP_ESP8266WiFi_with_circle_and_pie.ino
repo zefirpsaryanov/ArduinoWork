@@ -1,16 +1,36 @@
 #include <TimeLib.h>
-#include <WiFi.h>
+#include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
+#include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 
+const char ssid[] = "test";
+const char pass[] = "1q2w3e4r";
 
-#define TFT_CS 14  //for D32 Pro
-#define TFT_DC 27  //for D32 Pro
-#define TFT_RST 33 //for D32 Pro
+#define TFT_CS D0  //for D1 mini or TFT I2C Connector Shield (V1.1.0 or later)
+#define TFT_DC D8  //for D1 mini or TFT I2C Connector Shield (V1.1.0 or later)
+#define TFT_RST -1 //for D1 mini or TFT I2C Connector Shield (V1.1.0 or later)
+#define TS_CS D3   //for D1 mini or TFT I2C Connector Shield (V1.1.0 or later)
 
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
+
+static const char ntpServerName[] = "ntp.comnet.bg";
+
+const int timeZone = 3;     // Central European Time
+
+WiFiUDP Udp;
+unsigned int localPort = 8888;
+
+time_t getNtpTime();
+
+int w = tft.width();  // 240
+int h = tft.height(); // 320
+int clockCenterX = w / 2;
+int clockCenterY = w / 2;
+int fontW;
+int fontH;
 
 //#define TFT_BLACK       0x0000  ///<   0,   0,   0
 //#define TFT_NAVY        0x000F  ///<   0,   0, 123
@@ -32,24 +52,6 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 //#define TFT_GREENYELLOW 0xAFE5  ///< 173, 255,  41
 //#define TFT_PINK        0xFC18  ///< 255, 130, 198
 
-const char ssid[] = "test";
-const char pass[] = "1q2w3e4r";
-
-static const char ntpServerName[] = "ntp.comnet.bg";
-
-const int timeZone = 2;     // Central European Time
-
-WiFiUDP Udp;
-unsigned int localPort = 8888;
-
-time_t getNtpTime();
-
-int w = tft.width();  // 240
-int h = tft.height(); // 320
-int clockCenterX = w / 2;
-int clockCenterY = w / 2;
-int fontW;
-int fontH;
 
 void setup()
 {

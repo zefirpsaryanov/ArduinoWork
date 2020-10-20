@@ -32,7 +32,7 @@ decode_results results;
 
 void setup() 
 {
-  Serial.begin(230400);
+  Serial.begin(115200);
   irrecv.enableIRIn();  // Start the receiver
   while (!Serial)  // Wait for the serial connection to be establised.
     delay(50);
