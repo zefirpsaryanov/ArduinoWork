@@ -72,13 +72,10 @@ void loop()
 
 void displayTime()
 {
-  // Create time format to display:
   int displaytime = (hour() * 100) + minute();
-  // Display the current time in 24 hour format with leading zeros enabled and a center colon:
   display.showNumberDecEx(displaytime, 0b11100000, true);
-  // Remove the following lines of code if you want a static instead of a blinking center colon:
   delay(1000);
-  display.showNumberDec(displaytime, true); // Prints displaytime without center colon.
+  display.showNumberDec(displaytime, true);
   delay(1000);
 }
 
