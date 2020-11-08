@@ -185,7 +185,7 @@ void sendNTPpacket(IPAddress &address)
 
 void sprintfData()
 {
-  sprintf(timeToString, "%02d:%02d:%02d" , hour() + 1, minute(), second());
+  sprintf(timeToString, "%02d:%02d:%02d" , hour() , minute(), second());
   sprintf(dateToString, "%02d.%02d.%d", day(), month(), year());
   if (weekday() == 1) dayofweek = "Sunday";
   if (weekday() == 2) dayofweek = "Monday";

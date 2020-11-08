@@ -40,13 +40,13 @@ void setup()
   digitalWrite(output4, LOW);
   WiFiManager wifiManager;
 
-  //reset saved settings
-  //wifiManager.resetSettings();
-
   wifiManager.autoConnect();
 
-  server.begin();
+  if (wifiManager.autoConnect() != false) // reset if last wifi is not found :)
+    server.begin();
 
+  else
+    wifiManager.resetSettings(); //connect last known wifi
 }
 
 void loop() {
