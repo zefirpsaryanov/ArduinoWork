@@ -7,8 +7,8 @@
 #include <ESP8266WiFi.h>
 
 // Replace with your network credentials
-const char* ssid     = "service1384";
-const char* password = "1384service";
+const char* ssid     = "test";
+const char* password = "1q2w3e4r";
 
 // Set web server port number to 80
 WiFiServer server(80);
@@ -21,8 +21,8 @@ String output5State = "on";
 String output4State = "on";
 
 // Assign output variables to GPIO pins
-const int output5 = 5;
-const int output4 = 4;
+const int output5 = 0;
+const int output4 = 2;
 
 // Current time
 unsigned long currentTime = millis();

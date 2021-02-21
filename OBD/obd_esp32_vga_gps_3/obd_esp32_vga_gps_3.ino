@@ -37,6 +37,7 @@ int RUNTIME;
 double VOLTAGE;
 int FUEL_LEVEL;
 int ENGINE_OIL_TEMP;
+int EET = 2; // +2 / +3 East Europian Time
 
 char tempSPEED[20];
 char tempRPM[20];
@@ -130,7 +131,7 @@ void rpmDraw()
 	vga.setCursor(48, 5);
 	vga.print("RPM");
 	vga.setCursor(45, 21);
-	setColorByValue(RPM, 2500, 3000, 3500);
+	setColorByValue(RPM, 3000, 3250, 3500);
 	vga.print(tempRPM);
 }
 
@@ -283,7 +284,11 @@ void oledDisp()
 
 	myOLED.print(timeToStringOLED, RIGHT, 0);
 	//myOLED.print(dateToString, CENTER, 16);
-	myOLED.print(tempFUEL, RIGHT, 16);
+	//myOLED.print(tempFUEL, RIGHT, 16);
+	myOLED.print(tempAMBIENT, CENTER, 16);
+	myOLED.print(tempVOLTAGE, RIGHT, 16);
+	
+	
 
 	myOLED.setFont(BigNumbers);
 	myOLED.printNumI(COOLANT, LEFT, 0);
@@ -306,9 +311,9 @@ void sprintfDataCalcs()
 	sprintf(tempFUEL_LEVEL, "%02d", FUEL_LEVEL);
 	sprintf(tempENGINE_OIL_TEMP, "%03d", ENGINE_OIL_TEMP);
 
-	sprintf(timeToStringVGA, "%02d:%02d:%02d", gps.time.hour() + 2, gps.time.minute(), gps.time.second());
+	sprintf(timeToStringVGA, "%02d:%02d:%02d", gps.time.hour() + EET, gps.time.minute(), gps.time.second());
 	sprintf(dateToStringVGA, "%02d.%02d.%d", gps.date.day(), gps.date.month(), gps.date.year());
-	sprintf(timeToStringOLED, "%02d.%02d", gps.time.hour() + 2, gps.time.minute());
+	sprintf(timeToStringOLED, "%02d:%02d", gps.time.hour() + EET, gps.time.minute());
 
 	/* ------------ Data Calculations ------------*/
 
@@ -323,7 +328,9 @@ void sprintfDataCalcs()
 		gpsSpeed = 1;
 	}
 	if (fuelTMP <= 0) fuelTMP = 0.01;
+	
 	if (ENGINE_FUEL_RATE <= 0) ENGINE_FUEL_RATE = 0.01;
+	
 	fuelTMP = (ENGINE_FUEL_RATE / gpsSpeed) / 0.036;
 }
 
@@ -385,8 +392,8 @@ void debugInfoGPS() // GPS Debug Info
 
 	if (gps.time.isValid())
 	{
-		if (gps.time.hour() + 2 < 10) Serial.print("0");
-		Serial.print(gps.time.hour() + 2);
+		if (gps.time.hour() + EET < 10) Serial.print("0");
+		Serial.print(gps.time.hour() + EET);
 		Serial.print(":");
 		if (gps.time.minute() < 10) Serial.print("0");
 		Serial.print(gps.time.minute());

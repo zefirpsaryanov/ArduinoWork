@@ -16,18 +16,26 @@
 #include "Adafruit_GFX.h"
 #include "Adafruit_ILI9341.h"
 
-#define _cs   26   // 3 goes to TFT CS
-#define _dc   25   // 4 goes to TFT DC
-#define _mosi 17  // 5 goes to TFT MOSI
-#define _sclk 16  // 6 goes to TFT SCK/CLK
-#define _rst 34 // ESP RST to TFT RESET
+//#define TFT_DC    15  // DC
+//#define TFT_RST   2   // RES
+//#define TFT_CS    16  // CS
+//#define TFT_MOSI  23  // SDA
+//#define TFT_SCLK  18  // SCL
+
+
+
+#define _cs   16   // 3 goes to TFT CS
+#define _dc   15   // 4 goes to TFT DC
+#define _mosi 23  // 5 goes to TFT MOSI
+#define _sclk 18  // 6 goes to TFT SCK/CLK
+#define _rst   2 // ESP RST to TFT RESET
 #define _miso     // Not connected
 //       3.3V     // Goes to TFT LED  
 //       5v       // Goes to TFT Vcc
 //       Gnd      // Goes to TFT Gnd        
 
 // Use hardware SPI (on ESP D4 and D8 as above)
-Adafruit_ILI9341 tft = Adafruit_ILI9341(_CS, _DC);
+Adafruit_ILI9341 tft = Adafruit_ILI9341(_cs, _dc);
 // If using the breakout, change pins as desired
 //Adafruit_ILI9341 tft = Adafruit_ILI9341(_cs, _dc, _mosi, _sclk, _rst);
 
