@@ -63,10 +63,7 @@
 
 void DSTTime()
 {
-  if (month() < 11 && month() >= 3 && day() >= 25 && weekday() == 1 ) hourDST = hour() + 1;
-  if (month() < 11 && month() >= 3 && day() > 26) hourDST = hour() + 1;
-
-  if (month() < 11 || month() > 3) hourDST = hour() + 1;
+  if (month() <= 3 && month() <= 10 && day() > 26) hourDST = hour() + 1;
   else hourDST = hour();
 }
 */

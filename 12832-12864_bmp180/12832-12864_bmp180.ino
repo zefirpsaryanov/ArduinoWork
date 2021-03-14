@@ -111,11 +111,11 @@ void loop()  // Start of loop
 
   // Print text:
   display32.setCursor(3, 10);  // (x,y)
-  display32.println(bmp.readTemperature());  // Text or value to print
+  display32.println(bmp.readTemperature());  // celsius
 
   display64.setCursor(3, 10);  // (x,y)
-  display64.println(bmp.readTemperature()*9/5+32);  // Text or value to print
-
+  display64.println(bmp.readTemperature())*9/5+32);  // fahrenheit 
+  
   display32.display();  // Print everything we set previously
   display64.display();  // Print everything we set previously
 

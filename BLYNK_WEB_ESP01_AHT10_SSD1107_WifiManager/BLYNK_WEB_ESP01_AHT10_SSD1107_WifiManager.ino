@@ -1,40 +1,30 @@
-/*
-  #########################################################################
-  ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
-  #########################################################################
-
-  define TFT_CS   15 // CS -> D8
-  define TFT_DC   2  // DC -> D4
-  define TFT_RST  -1 // RES ->RES
-  define TFT_MOSI 13 // SDA ->D7
-  define TFT_SCLK 14 // SCL ->D5
-  GND-GND
-  VCC-3,3V
-
-  #define ST7735_DRIVER      // Define additional parameters below for this display
-  #define ST7735_GREENTAB2   // 1.8 128*160
-*/
-
-#include <SPI.h>
+#include <Arduino.h>
+#include <Wire.h>
 #include <WiFiUdp.h>
 #include <WiFiManager.h>
 #include <DNSServer.h>
 #include <TimeLib.h>
 #include <Adafruit_AHT10.h>
-#include <TFT_eSPI.h>
-
 #include <BlynkSimpleEsp8266.h>
+#include <U8g2lib.h>
+#include <Adafruit_BMP085.h>
 
-#define resetKey 12 //D6
+#define SDA 0
+#define SCL 2
+
+//U8G2_R0  No rotation, landscape
+//U8G2_R1 90 degree clockwise rotation
+//U8G2_R2 180 degree clockwise rotation
+//U8G2_R3 270 degree clockwise rotation
+
+U8G2_SH1107_64X128_F_HW_I2C u8g2(U8G2_R1, U8X8_PIN_NONE);
 
 // Set web server port number to 80
 ESP8266WebServer server(80);
 
-// NTP Servers:
 static const char ntpServerName[] = "ntp.comnet.bg";
+
 int timeZone = 2; // Central European Time
-int hourDST = 0;  //summer time hour()
-bool isTimeSet = false;
 
 WiFiUDP Udp;
 unsigned int localPort = 8888;  // local port to listen for UDP packets
@@ -45,20 +35,22 @@ time_t getNtpTime();
 time_t prevDisplay = 0; // when the digital clock was displayed
 
 Adafruit_AHT10 aht;
-float aht10_Temperature;
-float aht10_Humidity;
 sensors_event_t humidity, temp;
 
-TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
+float aht10_Temperature;
+float aht10_Humidity;
 
 char timeToString[8];
+char dateToString[8];
 char timeToStr[8];
 
-char auth[] = "Po-oapMzZwHgRlX5zVnI8OKSfkvxjZHC";
+//char auth[] = "Po-oapMzZwHgRlX5zVnI8OKSfkvxjZHC"; //zdrawko
+char auth[] = "OZjty6US2AUwzBcQEmZIY1icI1O7LItm"; //georgi
+//char auth[] = "1a589190cd0e42caa727ea338ed16790"; // zefir
 
 uint32_t apiChipId = ESP.getChipId();
 int rssi;
-int rssiMin = -85; // define maximum strength of signal in dBm
+int rssiMin = -90; // define maximum strength of signal in dBm
 int rssiMax = -30; // define minimum strength of signal in dBm
 
 WiFiManager wifiManager;
@@ -66,21 +58,21 @@ WiFiManager wifiManager;
 void setup(void)
 {
   Serial.begin(115200);
-  tft.init();
-  tft.setRotation(2);
-  tft.fillScreen(TFT_BLACK);
-  tft.setCursor(0, 0);
-  tft.setTextFont(2);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.println("Connect to");
-  tft.print("ESP_");
-  tft.print(apiChipId, HEX);
-  tft.println("");
+  Wire.begin(SDA, SCL);
 
   aht.begin();
+  u8g2.begin();
+
+  u8g2.clearBuffer();
+  u8g2.setContrast(0); // 0-255
+  u8g2.setFont(u8g2_font_6x13_tf);
+  u8g2.setCursor(0, 10);
+  u8g2.print("Connect to ");
+  u8g2.print("ESP_");
+  u8g2.print(apiChipId, HEX);
+  u8g2.sendBuffer();
 
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
-
   wifiManager.autoConnect();
 
   if (wifiManager.autoConnect() != false) // reset if last wifi is not found :)
@@ -88,81 +80,72 @@ void setup(void)
     server.on("/", handle_OnConnect);
     server.onNotFound(handle_NotFound);
     server.begin();
-    WiFi.hostname("ESP12-AHT10");
-
+    WiFi.hostname("ESP01-AHT10");
+    Udp.begin(localPort);
+    setSyncProvider(getNtpTime);
+    setSyncInterval(300);
+    Blynk.config(auth);
+    Blynk.connect();
   }
 
   else
     wifiManager.resetSettings(); // resetSettings
-
-  Serial.print("IP number assigned by DHCP is ");
-  Serial.println(WiFi.localIP());
-  Serial.println("Starting UDP");
-  Udp.begin(localPort);
-  Serial.print("Local port: ");
-  Serial.println(Udp.localPort());
-  Serial.println("waiting for sync");
-  setSyncProvider(getNtpTime);
-  setSyncInterval(300);
-
-  pinMode(resetKey, INPUT_PULLUP);// set pin as input
-
-  Blynk.config(auth);
-  Blynk.connect();
-
 }
 
-void DSTTime()
+void loop(void)
 {
-  /*
-    }
-    if (isTimeSet == false)
-    {
-    if (month() <= 3 && month() <= 10 && day() >= 25 && weekday() == 1 ) hourDST = hour() + 1;
-
-    else if (month() <= 3 && month() <= 10 && day() > 26 ) hourDST = hour() + 1;
-
-    else if (month() <= 3 && month() <= 10 && day() >= 25 && weekday() == 1 ) hourDST = hour() + 1;
-
-    isTimeSet = true;
-    }
-
-    else
-  */
-  hourDST = hour();
-}
-
-void loop()
-{
-  int resetKeyStatus = digitalRead(resetKey); // read if resetKey is pressed
-  if (!resetKeyStatus)
-  {
-    wifiManager.resetSettings(); // wipe settings
-    ESP.restart();
-  }
-  Blynk.run();
   aht.getEvent(&humidity, &temp);
   aht10_Temperature = temp.temperature - 1;
-  aht10_Humidity = humidity.relative_humidity + 4;
-
-  Blynk.virtualWrite(V1, aht10_Temperature);  //Blynk V1 is for Temperature
-  Blynk.virtualWrite(V2, aht10_Humidity);  //Blynk V2 is for Humidity
-
-  getTimeNow();
-  DSTTime();
-  printTime();
-  printTempHum();
-  printOther();
+  aht10_Humidity = humidity.relative_humidity;
 
   rssi = map(WiFi.RSSI(), rssiMin, rssiMax, 0, 100); //rssi to %
 
+  getTimeNow();
+  sprints();
+  oledPrint();
+
   server.handleClient();
-  delay(250);
+
+  Blynk.run();
+  Blynk.virtualWrite(V1, aht10_Temperature);  //Blynk V1 is for Temperature
+  Blynk.virtualWrite(V2, aht10_Humidity);     //Blynk V2 is for Humidity
+  Blynk.virtualWrite(V3, rssi);               //Blynk V2 is for RSSI
+  delay(100);
+}
+
+void oledPrint()
+{
+  u8g2.clearBuffer();
+  u8g2.setContrast(16); // 0-255
+  u8g2.setFont(u8g2_font_logisoso26_tn);
+
+  u8g2.setCursor(0, 26);
+  u8g2.print(timeToString);
+
+  u8g2.setCursor(0, 64);
+  u8g2.print(aht10_Temperature, 1);
+
+  u8g2.setCursor(85, 64);
+  u8g2.print(aht10_Humidity, 0);
+
+  u8g2.setFont(u8g2_font_6x13_tf);
+  u8g2.setCursor(85, 10);
+  u8g2.print(dateToString);
+
+  u8g2.setCursor(85, 23);
+  u8g2.print(year());
+
+  u8g2.setCursor(0, 36);
+  u8g2.print(WiFi.localIP().toString());
+
+  u8g2.setCursor(85, 36);
+  u8g2.print(rssi);
+  u8g2.print("%");
+  u8g2.sendBuffer();
 }
 
 void getTimeNow()
 {
-
   if (timeStatus() != timeNotSet)
   {
     if (now() != prevDisplay)
@@ -170,7 +153,6 @@ void getTimeNow()
       prevDisplay = now();
     }
   }
-
 }
 /*-------- NTP code ----------*/
 
@@ -232,48 +214,11 @@ void sendNTPpacket(IPAddress & address)
   Udp.endPacket();
 }
 
-void printTime()
+void sprints()
 {
-  sprintf(timeToString, "%02d%02d", hourDST, minute());
-  sprintf(timeToStr, "%02d.%02d", hourDST, minute());
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.setCursor(0, 0);
-  tft.setTextFont(7);
-  tft.print(timeToString);
-  tft.setTextFont(1);
-  tft.setCursor(61, 42);
-  tft.print("o");
-}
-
-void printTempHum()
-{
-  tft.setTextFont(7);
-  tft.setCursor(0, 50);
-  tft.print(aht10_Temperature, 1);
-
-  tft.setTextFont(2);
-  tft.setCursor(115, 65);
-  tft.print("o");
-  tft.setCursor(115, 82);
-  tft.print("C");
-
-  tft.setCursor(0, 100);
-  tft.setTextFont(7);
-  tft.print(aht10_Humidity, 1);
-  tft.setTextFont(2);
-  tft.setCursor(115, 115);
-  tft.print("%");
-  tft.setCursor(115, 133);
-  tft.print("H");
-}
-void printOther()
-{
-  tft.setTextFont(1);
-  tft.setCursor(0, 150);
-  tft.print(WiFi.localIP().toString());
-  tft.setCursor(104, 150);
-  tft.print(rssi);
-  tft.print("%");
+  sprintf(timeToString, "%02d:%02d", hour(), minute()); //OLED time
+  sprintf(dateToString, "%02d.%02d", day(), month());   //OLED date
+  sprintf(timeToStr, "%02d.%02d", hour(), minute());    //WWW
 }
 
 void handle_OnConnect()
@@ -316,9 +261,6 @@ String SendHTML(float t, float h)
 
   ptr += "<p>Time: ";
   ptr += timeToStr;
-  //ptr += hour();
-  //ptr += ":";
-  //ptr += minute();
   ptr += "</p>";
 
   ptr += "</div>\n";

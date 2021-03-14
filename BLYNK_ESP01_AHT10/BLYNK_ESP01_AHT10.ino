@@ -27,6 +27,6 @@ void loop()
   Blynk.run();
   sensors_event_t humidity, temp;
   aht.getEvent(&humidity, &temp);
-  Blynk.virtualWrite(V10, temp.temperature);  //Blynk V10 is for Humidity
-  Blynk.virtualWrite(V11, humidity.relative_humidity);  //Blynk V11 is for Temperature
+  Blynk.virtualWrite(V10, temp.temperature - 1); //Blynk V10 is for Humidity
+  Blynk.virtualWrite(V11, humidity.relative_humidity + 4); //Blynk V11 is for Temperature
 }

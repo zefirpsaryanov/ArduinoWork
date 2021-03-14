@@ -131,7 +131,7 @@ void rpmDraw()
 	vga.setCursor(48, 5);
 	vga.print("RPM");
 	vga.setCursor(45, 21);
-	setColorByValue(RPM, 3000, 3250, 3500);
+	setColorByValue(RPM, 3000, 3500, 4000);
 	vga.print(tempRPM);
 }
 
@@ -141,7 +141,7 @@ void coolantDraw()
 	vga.setCursor(82, 5);
 	vga.print("Water");
 	vga.setCursor(90, 21);
-	setColorByValue(COOLANT, 80, 95, 110);
+	setColorByValue(COOLANT, 85, 90, 100);
 	vga.print(tempCOOLANT);
 }
 
@@ -151,7 +151,7 @@ void fuelDraw()
 	vga.setCursor(130, 5);
 	vga.print("L/KM");
 	vga.setCursor(130, 21);
-	setColorByValue(fuelTMP, 5, 7, 9);
+	setColorByValue(fuelTMP, 7, 9, 11);
 
 	if (fuelTMP > 0)
 	{

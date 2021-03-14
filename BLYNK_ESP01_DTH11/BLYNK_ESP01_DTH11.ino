@@ -3,7 +3,7 @@
 #include <BlynkSimpleEsp8266.h>
 #include <DHT.h>
 
-char auth[] = "8BgNruc0_ODfycCitMdO1RHa8PrrTWRo";
+char auth[] = "1a589190cd0e42caa727ea338ed16790";
 char ssid[] = "test";
 char pass[] = "1q2w3e4r";
 
@@ -23,6 +23,6 @@ void setup()
 void loop()
 {
   Blynk.run();
-  Blynk.virtualWrite(V1, dht.readHumidity());
-  Blynk.virtualWrite(V2, dht.readTemperature());
+  Blynk.virtualWrite(V14, dht.readHumidity());
+  Blynk.virtualWrite(V15, dht.readTemperature());
 }
