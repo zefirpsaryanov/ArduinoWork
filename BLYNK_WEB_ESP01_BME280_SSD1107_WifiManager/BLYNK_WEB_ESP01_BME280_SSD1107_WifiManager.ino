@@ -5,7 +5,8 @@
 #include <DNSServer.h>
 #include <TimeLib.h>
 #include <BlynkSimpleEsp8266.h>
-#include <Adafruit_AHT10.h>
+#include <Adafruit_BME280.h>
+//#include <Adafruit_AHT10.h>
 #include <U8g2lib.h>
 
 #define SDA 0
@@ -33,7 +34,8 @@ time_t getNtpTime();
 
 time_t prevDisplay = 0; // when the digital clock was displayed
 
-Adafruit_AHT10 aht;
+//Adafruit_AHT10 aht;
+Adafruit_BME280 bme;
 
 float aht10_Temperature;
 float aht10_Humidity;
@@ -52,14 +54,15 @@ int rssiMin = -90; // define maximum strength of signal in dBm
 int rssiMax = -30; // define minimum strength of signal in dBm
 
 WiFiManager wifiManager;
-sensors_event_t humidity, temp;
+//sensors_event_t humidity, temp;
 
 void setup(void)
 {
   Wire.begin(SDA, SCL);
 
   u8g2.begin();
-  aht.begin();
+  bme.begin(0x76);
+
 
   u8g2.clearBuffer();
   u8g2.setContrast(16); // 0-255
@@ -85,17 +88,23 @@ void setup(void)
     setSyncInterval(300);
     Blynk.config(auth);
     Blynk.connect();
+
   }
 
   else
     wifiManager.resetSettings(); // resetSettings
+  //  aht.begin();
 }
 
 void loop(void)
 {
-  aht.getEvent(&humidity, &temp);
-  aht10_Temperature = temp.temperature;
-  aht10_Humidity = humidity.relative_humidity;
+  //  aht.getEvent(&humidity, &temp);
+  //  aht10_Temperature = temp.temperature;
+  //  aht10_Humidity = humidity.relative_humidity;
+
+  aht10_Humidity = bme.readHumidity();
+  aht10_Temperature = bme.readTemperature() - 1;
+
 
   rssi = map(WiFi.RSSI(), rssiMin, rssiMax, 0, 100); //rssi to %
 
@@ -109,7 +118,7 @@ void loop(void)
   Blynk.virtualWrite(V1, aht10_Temperature);  //Blynk V1 is for Temperature
   Blynk.virtualWrite(V2, aht10_Humidity);     //Blynk V2 is for Humidity
   Blynk.virtualWrite(V3, rssi);               //Blynk V2 is for RSSI
-  delay(250);
+  //  delay(500);
 }
 
 void oledPrint()

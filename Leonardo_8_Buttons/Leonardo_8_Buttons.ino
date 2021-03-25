@@ -32,18 +32,18 @@ void loop()
 
   if (!key2S)
   {
-    Keyboard.press('2');
-    Keyboard.release('2');
+    Keyboard.press(KEY_LEFT_ARROW);
+    Keyboard.release(KEY_LEFT_ARROW);
   }
   if (!key3S)
   {
-    Keyboard.press('3');
-    Keyboard.release('3');
+    Keyboard.press(KEY_RIGHT_ARROW);
+    Keyboard.release(KEY_RIGHT_ARROW);
   }
   if (!key4S)
   {
-    Keyboard.press('4');
-    Keyboard.release('4');
+    Keyboard.press('1');
+    Keyboard.release('1');
   }
   if (!key5S)
   {
@@ -52,8 +52,8 @@ void loop()
   }
   if (!key6S)
   {
-    Keyboard.press('6');
-    Keyboard.release('6');
+    Keyboard.press('z');
+    Keyboard.release('z');
   }
   if (!key7S)
   {
@@ -68,3 +68,6 @@ void loop()
 
   delay(100);
 }
+
+#define KEY_LEFT_ARROW    0xD8
+#define KEY_RIGHT_ARROW   0xD7
