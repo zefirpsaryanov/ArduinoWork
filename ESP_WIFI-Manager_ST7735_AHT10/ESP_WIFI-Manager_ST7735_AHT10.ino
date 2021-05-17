@@ -32,7 +32,7 @@ ESP8266WebServer server(80);
 
 // NTP Servers:
 static const char ntpServerName[] = "ntp.comnet.bg";
-int timeZone = 2; // Central European Time
+int timeZone = 3; // Central European Time
 int hourDST = 0;  //summer time hour()
 bool isTimeSet = false;
 

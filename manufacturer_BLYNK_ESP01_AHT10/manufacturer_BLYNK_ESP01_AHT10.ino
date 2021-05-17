@@ -8,7 +8,14 @@
 #define SDA 0
 #define SCL 2
 
-char auth[] = "HAmeb2RAOKzCG68cbcDH26IBcbT6fYzt";
+char auth[] = "kcWrUMsFmGCQ4fzi_flQSY-UE11xFZgB";
+
+// kcWrUMsFmGCQ4fzi_flQSY-UE11xFZgB - dian
+// HAmeb2RAOKzCG68cbcDH26IBcbT6fYzt - zefir
+// Po-oapMzZwHgRlX5zVnI8OKSfkvxjZHC - zdravko
+// OZjty6US2AUwzBcQEmZIY1icI1O7LItm - georgi
+// 1a589190cd0e42caa727ea338ed16790 - zefir local
+// xDpp7zoQs7FYqGUXxCxfgXQOrktaPHoc - st.bubalov
 
 Adafruit_AHT10 aht;
 
@@ -45,6 +52,6 @@ void loop()
   Blynk.run();
   sensors_event_t humidity, temp;
   aht.getEvent(&humidity, &temp);
-  Blynk.virtualWrite(V1, temp.temperature);  //Blynk V1 is for Humidity
-  Blynk.virtualWrite(V2, humidity.relative_humidity);  //Blynk V2 is for Temperature
+  Blynk.virtualWrite(V1, temp.temperature - 4.0); //Blynk V1 is for Humidity
+  Blynk.virtualWrite(V2, humidity.relative_humidity - 4.0); //Blynk V2 is for Temperature
 }

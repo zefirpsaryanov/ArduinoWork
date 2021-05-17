@@ -18,8 +18,8 @@ void setup()
   Wire.begin(SDA, SCL);
   aht.begin();
   Blynk.begin(auth, ssid, pass, IPAddress(192, 168, 10, 10), 8080);
-  //  Blynk.begin(auth, ssid, pass, IPAddress(217, 174, 61, 217), 9444);
-  WiFi.hostname("ESP01-Kitchen");
+  //  Blynk.begin(auth, ssid, pass, IPAddress(217, 174, 61, 217), 18080);
+  WiFi.hostname("ESP01-test");
 }
 
 void loop()
@@ -27,6 +27,6 @@ void loop()
   Blynk.run();
   sensors_event_t humidity, temp;
   aht.getEvent(&humidity, &temp);
-  Blynk.virtualWrite(V10, temp.temperature - 1); //Blynk V10 is for Humidity
-  Blynk.virtualWrite(V11, humidity.relative_humidity + 4); //Blynk V11 is for Temperature
+  Blynk.virtualWrite(V27, temp.temperature - 1); //Blynk V27 is for Humidity
+  Blynk.virtualWrite(V28, humidity.relative_humidity + 4); //Blynk V28 is for Temperature
 }

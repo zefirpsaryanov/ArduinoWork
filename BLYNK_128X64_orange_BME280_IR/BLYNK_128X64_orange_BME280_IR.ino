@@ -29,7 +29,7 @@ const char ssid[] = "test";
 const char pass[] = "1q2w3e4r";
 
 static const char ntpServerName[] = "ntp.comnet.bg";
-const int timeZone = 2;
+const int timeZone = 3;
 WiFiUDP Udp;
 unsigned int localPort = 8888;  // local port to listen for UDP packets
 time_t getNtpTime();
