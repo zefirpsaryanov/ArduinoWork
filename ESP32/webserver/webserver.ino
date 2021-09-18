@@ -27,6 +27,8 @@ unsigned long previousTime = 0;
 const long timeoutTime = 2000;
 
 void setup() {
+
+
   Serial.begin(115200);
   // Initialize the output variables as outputs
   pinMode(output26, OUTPUT);
@@ -38,9 +40,19 @@ void setup() {
   // Connect to Wi-Fi network with SSID and password
   Serial.print("Connecting to ");
   Serial.println(ssid);
-  WiFi.begin(ssid, password);
+
+
   
-  WiFi.setSleep(false); // VINAGI 
+  
+  WiFi.setSleep(false); 
+
+
+
+  
+  
+  WiFi.begin(ssid, password);
+
+  WiFi.setSleep(false); // VINAGI
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
