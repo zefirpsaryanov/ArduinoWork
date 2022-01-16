@@ -3,8 +3,7 @@
 #include <SPI.h>
 
 #include <ESP8266WiFi.h>
-#include <WiFiUdp.h>
-#include <TimeLib.h>
+#include <ezTime.h>
 
 #include <U8g2lib.h>
 U8G2_ST7567_ENH_DG128064I_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 14, /* data=*/ 13, /* cs=*/ 2, /* dc=*/ 0, /* reset=*/ -1);
@@ -28,20 +27,29 @@ IRsend irsend(kIrLed);
 const char ssid[] = "test";
 const char pass[] = "1q2w3e4r";
 
-static const char ntpServerName[] = "ntp.comnet.bg";
-const int timeZone = 3;
-WiFiUDP Udp;
-unsigned int localPort = 8888;  // local port to listen for UDP packets
-time_t getNtpTime();
-void sendNTPpacket(IPAddress &address);
+Timezone myTZ;
 char timeToString[20];
 char dateToString[20];
 String dayofweek;
 
 float h , t , p = 0;
 
-const int LCD_PIN = 15;
-const int DUTY = 128;
+int LCD_PIN = 15;
+int DUTY = 48;
+
+#include <MQUnifiedsensor.h>
+#define placa "Arduino UNO"
+#define Voltage_Resolution 5
+#define pin A0 //Analog input 0 of your arduino
+#define type "MQ-135" //MQ135
+#define ADC_Bit_Resolution 10 // For arduino UNO/MEGA/NANO
+#define RatioMQ135CleanAir 3.6//RS / R0 = 3.6 ppm  
+
+MQUnifiedsensor MQ135(placa, Voltage_Resolution, ADC_Bit_Resolution, pin, type);
+
+float CO , Alcohol , CO2 , Tolueno , NH4 , Acetona;
+int gasLevel = 0;
+String quality = "";
 
 void setup()
 {
@@ -60,57 +68,100 @@ void setup()
   WiFi.hostname("WemosMini-indor");
   Blynk.begin(auth, ssid, pass, IPAddress(192, 168, 10, 10), 8080);
 
-  Udp.begin(localPort);
-  setSyncProvider(getNtpTime);
-  setSyncInterval(300);
-}
+  waitForSync();
+  myTZ.setLocation(F("Europe/Sofia"));
 
-time_t prevDisplay = 0; // when the digital clock was displayed
+  MQ135.setRegressionMethod(1); //_PPM =  a*ratio^b
+  MQ135.init();
+  float calcR0 = 0;
+  for (int i = 1; i <= 10; i ++)
+  {
+    MQ135.update(); // Update data, the arduino will be read the voltage on the analog pin
+    calcR0 += MQ135.calibrate(RatioMQ135CleanAir);
+    Serial.print(". ");
+  }
+  MQ135.setR0(calcR0 / 10);
+  Serial.println("done!");
+}
 
 void loop()  // Start of loop
 {
+  t = bme.readTemperature() - 1;
+  h = bme.readHumidity() - 5;
+  p = bme.readPressure() / 100.0F;
 
-  // Convert Variable1 into a string, so we can change the text alignment to the right:
-  // It can be also used to add or remove decimal numbers.
-  // char string[10];  // Create a character array of 10 characters
-  // Convert float to a string:
-  // dtostrf(Variable1, 3, 0, string);  // (<variable>,<amount of digits we are going to use>,<amount of decimal digits>,<string name>)
+  MQ135.update(); // Update data, the arduino will be read the voltage on the analog pin
+
+  MQ135.setA(605.18); MQ135.setB(-3.937); // Configurate the ecuation values to get CO concentration
+  CO = MQ135.readSensor(); // Sensor will read PPM concentration using the model and a and b values setted before or in the setup
+
+  MQ135.setA(77.255); MQ135.setB(-3.18); // Configurate the ecuation values to get Alcohol concentration
+  Alcohol = MQ135.readSensor(); // Sensor will read PPM concentration using the model and a and b values setted before or in the setup
+
+  MQ135.setA(110.47); MQ135.setB(-2.862); // Configurate the ecuation values to get CO2 concentration
+  CO2 = MQ135.readSensor(); // Sensor will read PPM concentration using the model and a and b values setted before or in the setup
+
+  MQ135.setA(44.947); MQ135.setB(-3.445); // Configurate the ecuation values to get Tolueno concentration
+  Tolueno = MQ135.readSensor(); // Sensor will read PPM concentration using the model and a and b values setted before or in the setup
+
+  MQ135.setA(102.2 ); MQ135.setB(-2.473); // Configurate the ecuation values to get NH4 concentration
+  NH4 = MQ135.readSensor(); // Sensor will read PPM concentration using the model and a and b values setted before or in the setup
+
+  MQ135.setA(34.668); MQ135.setB(-3.369); // Configurate the ecuation values to get Acetona concentration
+  Acetona = MQ135.readSensor(); // Sensor will read PPM concentration using the model and a and b values setted before or in the setup
+
+  sprintfData();
+  air_sensor();
 
   u8g2.clearBuffer();
   u8g2.setFont(u8g2_font_7x13B_tf);
 
-  u8g2.setCursor(80, 10);  // (x,y)
-  u8g2.println(t);  // Text or value to print
-
-  u8g2.setCursor(80, 21);  // (x,y)
-  u8g2.println(h);  // Text or value to
-
-  u8g2.setCursor(80, 32);  // (x,y)
-  u8g2.println(p);  // Text or value to print
-
-  u8g2.setCursor(0, 10);  // (x,y)
+  u8g2.setCursor(0, 9);  // (x,y)
   u8g2.println(timeToString); // Text or value to print
 
-  u8g2.setCursor(0, 21);  // (x,y)
+  u8g2.setCursor(0, 20);  // (x,y)
   u8g2.println(dateToString); // Text or value to print
 
-  u8g2.setCursor(0, 32);  // (x,y)
+  u8g2.setCursor(0, 31);  // (x,y)
   u8g2.println(dayofweek); // Text or value to print
 
-  if (timeStatus() != timeNotSet)
-  {
-    if (now() != prevDisplay)
-    { //update the display only if time has changed
-      prevDisplay = now();
-      sprintfData();
-    }
-  }
+  u8g2.setCursor(0, 42);  // (x,y)
+  u8g2.println("CO  "); // Text or value to print
+  u8g2.println(CO); // Text or value to print
+
+  u8g2.setCursor(0, 53);  // (x,y)
+  u8g2.println("Alc "); // Text or value to print
+  u8g2.println(Alcohol); // Text or value to print
+
+  u8g2.setCursor(0, 64);  // (x,y)
+  u8g2.println("CO2 "); // Text or value to print
+  u8g2.println(CO2); // Text or value to print
+
+
+  u8g2.setCursor(80, 9);  // (x,y)
+  u8g2.println(t);  // Text or value to print
+
+  u8g2.setCursor(80, 20);  // (x,y)
+  u8g2.println(h);  // Text or value to
+
+  u8g2.setCursor(80, 31);  // (x,y)
+  u8g2.println(p);  // Text or value to print
+
+  u8g2.setCursor(73, 42);  // (x,y)
+  u8g2.println("Tol ");
+  u8g2.println(Tolueno);
+
+  u8g2.setCursor(73, 53);  // (x,y)
+  u8g2.println("NH4 ");  // Text or value to
+  u8g2.println(NH4);  // Text or value to
+
+  u8g2.setCursor(73, 64);  // (x,y)
+  u8g2.println("Ace ");  // Text or value to print
+  u8g2.println(Acetona);  // Text or value to print
+  u8g2.sendBuffer();
+
 
   Blynk.run();
-
-  h = bme.readHumidity();
-  t = bme.readTemperature() - 1;
-  p = bme.readPressure() / 100.0F;
 
   Blynk.virtualWrite(V20, h);
   Blynk.virtualWrite(V21, t);
@@ -120,80 +171,41 @@ void loop()  // Start of loop
   Blynk.virtualWrite(V24, dateToString);
   Blynk.virtualWrite(V25, dayofweek);
 
-  u8g2.sendBuffer();
-}
-
-
-/*-------- NTP code ----------*/
-
-const int NTP_PACKET_SIZE = 48; // NTP time is in the first 48 bytes of message
-byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming & outgoing packets
-
-time_t getNtpTime()
-{
-  IPAddress ntpServerIP; // NTP server's ip address
-
-  while (Udp.parsePacket() > 0) ; // discard any previously received packets
-  Serial.println("Transmit NTP Request");
-  // get a random server from the pool
-  WiFi.hostByName(ntpServerName, ntpServerIP);
-  Serial.print(ntpServerName);
-  Serial.print(": ");
-  Serial.println(ntpServerIP);
-  sendNTPpacket(ntpServerIP);
-  uint32_t beginWait = millis();
-  while (millis() - beginWait < 1500) {
-    int size = Udp.parsePacket();
-    if (size >= NTP_PACKET_SIZE) {
-      Serial.println("Receive NTP Response");
-      Udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
-      unsigned long secsSince1900;
-      // convert four bytes starting at location 40 to a long integer
-      secsSince1900 =  (unsigned long)packetBuffer[40] << 24;
-      secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
-      secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
-      secsSince1900 |= (unsigned long)packetBuffer[43];
-      return secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;
-    }
-  }
-  Serial.println("No NTP Response :-(");
-  return 0; // return 0 if unable to get the time
-}
-
-// send an NTP request to the time server at the given address
-void sendNTPpacket(IPAddress &address)
-{
-  // set all bytes in the buffer to 0
-  memset(packetBuffer, 0, NTP_PACKET_SIZE);
-  // Initialize values needed to form NTP request
-  // (see URL above for details on the packets)
-  packetBuffer[0] = 0b11100011;   // LI, Version, Mode
-  packetBuffer[1] = 0;     // Stratum, or type of clock
-  packetBuffer[2] = 6;     // Polling Interval
-  packetBuffer[3] = 0xEC;  // Peer Clock Precision
-  // 8 bytes of zero for Root Delay & Root Dispersion
-  packetBuffer[12] = 49;
-  packetBuffer[13] = 0x4E;
-  packetBuffer[14] = 49;
-  packetBuffer[15] = 52;
-  // all NTP fields have been given values, now
-  // you can send a packet requesting a timestamp:
-  Udp.beginPacket(address, 123); //NTP requests are to port 123
-  Udp.write(packetBuffer, NTP_PACKET_SIZE);
-  Udp.endPacket();
+  Blynk.virtualWrite(V28, CO);
+  Blynk.virtualWrite(V29, Alcohol);
+  Blynk.virtualWrite(V30, CO2);
+  Blynk.virtualWrite(V31, NH4);
+  Blynk.virtualWrite(V32, Acetona);
+  Blynk.virtualWrite(V33, Tolueno);
+  Blynk.virtualWrite(V34, quality);
 }
 
 void sprintfData()
 {
-  sprintf(timeToString, "%02d:%02d:%02d" , hour() , minute(), second());
-  sprintf(dateToString, "%02d.%02d.%d", day(), month(), year());
-  if (weekday() == 1) dayofweek = "Sunday";
-  if (weekday() == 2) dayofweek = "Monday";
-  if (weekday() == 3) dayofweek = "Tuesday";
-  if (weekday() == 4) dayofweek = "Wednesday";
-  if (weekday() == 5) dayofweek = "Thursday";
-  if (weekday() == 6) dayofweek = "Friday";
-  if (weekday() == 7) dayofweek = "Saturday";
+  sprintf(timeToString, "%02d:%02d:%02d" , myTZ.hour() , myTZ.minute(), myTZ.second());
+  sprintf(dateToString, "%02d.%02d.%d", myTZ.day(), myTZ.month(), myTZ.year());
+  if (myTZ.weekday() == 1) dayofweek = "Sunday";
+  if (myTZ.weekday() == 2) dayofweek = "Monday";
+  if (myTZ.weekday() == 3) dayofweek = "Tuesday";
+  if (myTZ.weekday() == 4) dayofweek = "Wednesday";
+  if (myTZ.weekday() == 5) dayofweek = "Thursday";
+  if (myTZ.weekday() == 6) dayofweek = "Friday";
+  if (myTZ.weekday() == 7) dayofweek = "Saturday";
+}
+
+void air_sensor()
+{
+  gasLevel = analogRead(pin);
+
+  if (gasLevel < 181) quality = "Good";
+
+  else if (gasLevel > 181 && gasLevel < 225) quality = "Poor";
+
+  else if (gasLevel > 225 && gasLevel < 300) quality = "Bad";
+
+  else if (gasLevel > 300 && gasLevel < 350) quality = "Dead";
+
+  else quality = "Toxic";
 }
 
 BLYNK_WRITE(V0)

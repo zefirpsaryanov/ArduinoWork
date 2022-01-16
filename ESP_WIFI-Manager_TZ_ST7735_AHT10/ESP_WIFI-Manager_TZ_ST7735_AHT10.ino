@@ -76,7 +76,8 @@ void loop()
 {
   Blynk.run();
   aht.getEvent(&humidity, &temp);
-  aht10_Temperature = temp.temperature - 3;
+  aht10_Temperature = temp.temperature - 1
+  ;
   aht10_Humidity = humidity.relative_humidity + 3;
 
   Blynk.virtualWrite(V1, aht10_Temperature);  //Blynk V1 is for Temperature
