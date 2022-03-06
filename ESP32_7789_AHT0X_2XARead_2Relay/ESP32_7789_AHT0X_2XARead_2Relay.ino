@@ -56,7 +56,7 @@ void loop()
       digitalWrite(relay1, LOW);
       relayState1 = LOW;
     }
-    else
+    if
     {
       digitalWrite(relay1, HIGH);
       relayState1 = HIGH;
@@ -67,7 +67,7 @@ void loop()
       digitalWrite(relay2, LOW);
       relayState2 = LOW;
     }
-    else
+    if
     {
       digitalWrite(relay2, HIGH);
       relayState2 = HIGH;

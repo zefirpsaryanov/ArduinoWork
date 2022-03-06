@@ -44,12 +44,13 @@ int DUTY = 48;
 #define type "MQ-135" //MQ135
 #define ADC_Bit_Resolution 10 // For arduino UNO/MEGA/NANO
 #define RatioMQ135CleanAir 3.6//RS / R0 = 3.6 ppm  
+#include "MQ135.h"
 
 MQUnifiedsensor MQ135(placa, Voltage_Resolution, ADC_Bit_Resolution, pin, type);
 
 float CO , Alcohol , CO2 , Tolueno , NH4 , Acetona;
 int gasLevel = 0;
-String quality = "";
+String quality = " ";
 
 void setup()
 {
@@ -178,6 +179,7 @@ void loop()  // Start of loop
   Blynk.virtualWrite(V32, Acetona);
   Blynk.virtualWrite(V33, Tolueno);
   Blynk.virtualWrite(V34, quality);
+  Blynk.virtualWrite(V42, gasLevel);
 }
 
 void sprintfData()
@@ -197,15 +199,10 @@ void air_sensor()
 {
   gasLevel = analogRead(pin);
 
-  if (gasLevel < 181) quality = "Good";
-
-  else if (gasLevel > 181 && gasLevel < 225) quality = "Poor";
-
-  else if (gasLevel > 225 && gasLevel < 300) quality = "Bad";
-
-  else if (gasLevel > 300 && gasLevel < 350) quality = "Dead";
-
-  else quality = "Toxic";
+  if (gasLevel < 350) quality = "Good";
+  if ((gasLevel >= 350) && (gasLevel < 450)) quality = "Poor";
+  if ((gasLevel >= 450) && (gasLevel < 600)) quality = "Bad";
+  if ((gasLevel >= 600) && (gasLevel < 1000)) quality = "Dead";
 }
 
 BLYNK_WRITE(V0)
