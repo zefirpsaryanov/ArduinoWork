@@ -66,8 +66,8 @@ void setup()
   u8g2.begin();
   u8g2.setContrast(160);
 
-  WiFi.hostname("WemosMini-indor");
   Blynk.begin(auth, ssid, pass, IPAddress(192, 168, 10, 10), 8080);
+  WiFi.hostname("WemosMini-indor");
 
   waitForSync();
   myTZ.setLocation(F("Europe/Sofia"));

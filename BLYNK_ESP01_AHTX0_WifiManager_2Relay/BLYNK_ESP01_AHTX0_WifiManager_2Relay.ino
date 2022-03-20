@@ -16,13 +16,13 @@ Adafruit_AHTX0 aht;
 #define BLYNK_RED       "#D3435C"
 
 //change this !!!!!!!!!!!!!!!!
-#define tempVPin  V35
-#define HumVPin   V36
-#define startTemp V37
-#define startHum  V38
-#define interval  V39
-#define LedPin1   V40
-#define LedPin2   V41
+#define tempVPin  V51
+#define HumVPin   V52
+#define startTemp V53
+#define startHum  V54
+#define interval  V55
+#define LedPin1   V56
+#define LedPin2   V57
 //change this !!!!!!!!!!!!!!!!
 
 float aht20_Temperature;
@@ -34,7 +34,7 @@ unsigned long startMillis;  //some global variables available anywhere in the pr
 unsigned long currentMillis;
 unsigned long period = 10000;  //the value is a number of milliseconds
 
-char auth[] = "1a589190cd0e42caa727ea338ed16790";
+char auth[] = "3h2E6uN9NXc54o_6lNlln_D5MRs9516H";
 
 WidgetLED led1(LedPin1);
 WidgetLED led2(LedPin2);
@@ -53,10 +53,9 @@ void setup(void)
 
   if (wifiManager.autoConnect() != false) // reset if last wifi is not found :)
   {
-    WiFi.hostname("AHTX0_2R");
-    //Blynk.config(auth, "blynk.techbg.net", 18080); // oop@techbg.net mVaRSybNBd7HBaXqsGP3YsgijTXJ-vkY
-    Blynk.config(auth, "psaryanov.org", 18080);
-    
+    WiFi.hostname("AHTX0_2R_5");
+    Blynk.config(auth, "blynk.techbg.net", 18080); // oop@techbg.net /weather mVaRSybNBd7HBaXqsGP3YsgijTXJ-vkY /relays 3h2E6uN9NXc54o_6lNlln_D5MRs9516H
+    //Blynk.config(auth, "psaryanov.org", 18080);
     //Blynk.config(auth, IPAddress(192, 168, 10, 10), 8080);
 
     Blynk.connect();
@@ -109,6 +108,9 @@ void loop(void)
     startMillis = currentMillis;  //IMPORTANT to save the start time of the current LED state.
   }
 
+  // restart 1h !!!!
+  // if (currentMillis >= 7200000) ESP.restart();
+
   aht.getEvent(&humidity, &temp);
   aht20_Temperature = temp.temperature - 1.5;
   aht20_Humidity = humidity.relative_humidity + 0.5;
@@ -129,5 +131,5 @@ BLYNK_WRITE(startHum)
 }
 BLYNK_WRITE(interval)
 {
-  period = param.asInt()*1000;
+  period = param.asInt() * 1000;
 }
