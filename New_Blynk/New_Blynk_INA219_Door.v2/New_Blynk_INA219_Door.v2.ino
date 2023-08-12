@@ -16,7 +16,7 @@ Timezone myTZ;
 
 char timeToString[8];
 char auth[] = BLYNK_AUTH_TOKEN;
-char ssid[] = "test";
+char ssid[] = "test1";
 char pass[] = "1q2w3e4r";
 
 float currentFrequency;

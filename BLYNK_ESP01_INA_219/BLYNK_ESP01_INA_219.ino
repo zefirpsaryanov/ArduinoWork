@@ -11,7 +11,7 @@
 Adafruit_INA219 ina219;
 
 char auth[] = "1a589190cd0e42caa727ea338ed16790";
-char ssid[] = "test";
+char ssid[] = "test1";
 char pass[] = "1q2w3e4r";
 
 float currentFrequency;

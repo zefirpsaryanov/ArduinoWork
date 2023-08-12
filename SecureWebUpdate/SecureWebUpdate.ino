@@ -25,7 +25,6 @@ void setup(void)
   Serial.begin(115200);
   Serial.println();
   Serial.println("Booting Sketch...");
-  WiFi.mode(WIFI_AP_STA);
   WiFi.begin(ssid, password);
 
   while (WiFi.waitForConnectResult() != WL_CONNECTED) 

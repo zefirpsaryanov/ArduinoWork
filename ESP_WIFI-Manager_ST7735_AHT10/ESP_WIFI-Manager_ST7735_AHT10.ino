@@ -19,28 +19,30 @@
 #include <WiFiUdp.h>
 #include <WiFiManager.h>
 #include <DNSServer.h>
-#include <TimeLib.h>
+#include <ezTime.h>
 #include <Adafruit_AHT10.h>
 #include <TFT_eSPI.h>
 
 #include <BlynkSimpleEsp8266.h>
 
-#define resetKey 12 //D6
+#define BLYNK_TEMPLATE_ID "TMPLQm205GIT"
+#define BLYNK_TEMPLATE_NAME "Quickstart Template"
+#define BLYNK_AUTH_TOKEN "Q_yx8WxfbYvoIaGCheTFdSCxsAcpFN5l"
 
 // Set web server port number to 80
 ESP8266WebServer server(80);
 
+Timezone myTZ;
+
 // NTP Servers:
 static const char ntpServerName[] = "ntp.comnet.bg";
 int timeZone = 3; // Central European Time
-int hourDST = 0;  //summer time hour()
 bool isTimeSet = false;
 
 WiFiUDP Udp;
 unsigned int localPort = 8888;  // local port to listen for UDP packets
 
 time_t getNtpTime();
-//void sendNTPpacket(IPAddress &address);
 
 time_t prevDisplay = 0; // when the digital clock was displayed
 
@@ -54,12 +56,10 @@ TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
 char timeToString[8];
 char timeToStr[8];
 
-char auth[] = "Po-oapMzZwHgRlX5zVnI8OKSfkvxjZHC";
-
 uint32_t apiChipId = ESP.getChipId();
 int rssi;
 int rssiMin = -85; // define maximum strength of signal in dBm
-int rssiMax = -30; // define minimum strength of signal in dBm
+int rssiMax = -25; // define minimum strength of signal in dBm
 
 WiFiManager wifiManager;
 
@@ -88,7 +88,7 @@ void setup(void)
     server.on("/", handle_OnConnect);
     server.onNotFound(handle_NotFound);
     server.begin();
-    WiFi.hostname("ESP12-AHT10");
+    WiFi.hostname("ESP_weather");
 
   }
 
@@ -105,41 +105,13 @@ void setup(void)
   setSyncProvider(getNtpTime);
   setSyncInterval(300);
 
-  pinMode(resetKey, INPUT_PULLUP);// set pin as input
-
   Blynk.config(auth);
   Blynk.connect();
 
 }
 
-void DSTTime()
-{
-  /*
-    }
-    if (isTimeSet == false)
-    {
-    if (month() <= 3 && month() <= 10 && day() >= 25 && weekday() == 1 ) hourDST = hour() + 1;
-
-    else if (month() <= 3 && month() <= 10 && day() > 26 ) hourDST = hour() + 1;
-
-    else if (month() <= 3 && month() <= 10 && day() >= 25 && weekday() == 1 ) hourDST = hour() + 1;
-
-    isTimeSet = true;
-    }
-
-    else
-  */
-  hourDST = hour();
-}
-
 void loop()
 {
-  int resetKeyStatus = digitalRead(resetKey); // read if resetKey is pressed
-  if (!resetKeyStatus)
-  {
-    wifiManager.resetSettings(); // wipe settings
-    ESP.restart();
-  }
   Blynk.run();
   aht.getEvent(&humidity, &temp);
   aht10_Temperature = temp.temperature - 1;
@@ -149,7 +121,6 @@ void loop()
   Blynk.virtualWrite(V2, aht10_Humidity);  //Blynk V2 is for Humidity
 
   getTimeNow();
-  DSTTime();
   printTime();
   printTempHum();
   printOther();
@@ -234,8 +205,8 @@ void sendNTPpacket(IPAddress & address)
 
 void printTime()
 {
-  sprintf(timeToString, "%02d%02d", hourDST, minute());
-  sprintf(timeToStr, "%02d.%02d", hourDST, minute());
+  sprintf(timeToString, "%02d%02d", hour(), minute());
+  sprintf(timeToStr, "%02d.%02d", hour(), minute());
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setCursor(0, 0);
   tft.setTextFont(7);

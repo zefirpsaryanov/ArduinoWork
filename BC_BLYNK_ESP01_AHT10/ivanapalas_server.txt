@@ -1,0 +1,59 @@
+#include <Wire.h>
+#include <ESP8266WiFi.h>
+#include <Adafruit_AHTX0.h>
+#include <ESP8266WebServer.h>
+
+#define SDA 4
+#define SCL 5
+
+char ssid[] = "O2";
+char pass[] = "1q2w3e4r";
+float aht10_Temperature;
+int alarma;
+
+IPAddress local_IP(192, 168, 10, 190);
+IPAddress gateway(192, 168, 10, 1);
+IPAddress subnet(255, 255, 255, 0);
+
+Adafruit_AHTX0 aht;
+ESP8266WebServer server(80);
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin(SDA, SCL);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, pass);
+  WiFi.config(local_IP, gateway, subnet);
+  aht.begin();
+
+  server.begin();
+  server.on("/", handle_OnConnect);
+  server.onNotFound(handle_NotFound);
+}
+
+void loop() {
+  sensors_event_t humidity, temp;
+  aht.getEvent(&humidity, &temp);
+
+  aht10_Temperature = temp.temperature;  // Gets the values of the temperature
+  aht10_Temperature > 28 ? alarma = 3 : alarma = 5;
+  Serial.println(aht10_Temperature);
+  delay(250);
+
+  server.handleClient();
+}
+
+void handle_OnConnect() {
+  server.send(200, "text/html", SendHTML(alarma));
+}
+
+void handle_NotFound() {
+  server.send(404, "text/plain", "Not found");
+}
+
+String SendHTML(int t) {
+  String ptr = "<!DOCTYPE html><html>";
+  ptr += t;
+  ptr += "</html>";
+  return ptr;
+}

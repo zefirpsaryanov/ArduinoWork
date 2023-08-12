@@ -1,0 +1,68 @@
+#include <ESP8266WiFi.h>
+#include <Wire.h>
+
+WiFiClient client;
+
+const char* ssid = "O2";
+const char* password = "1q2w3e4r";
+
+IPAddress local_IP(192, 168, 10, 191);
+IPAddress gateway(192, 168, 10, 1);
+IPAddress subnet(255, 255, 255, 0);
+const char* host = "192.168.10.190";
+
+char c;
+
+void setup() {
+  Serial.begin(115200);
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+
+  WiFi.begin(ssid, password);
+  WiFi.config(local_IP, gateway, subnet);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
+}
+
+void loop() {
+  Serial.print("connecting to ");
+  Serial.println(host);
+  WiFiClient client;
+  const int httpPort = 80;
+  client.connect(host, httpPort);
+  String url = "/";
+  Serial.print("Requesting URL: ");
+  Serial.println(url);
+  client.print(String("GET ") + url + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" + "Connection: close\r\n\r\n");
+  delay(2000);
+
+  while (client.available()) {
+    c = client.read();
+    Serial.write(c);
+
+    if (c != '3') {
+      digitalWrite(LED_BUILTIN, HIGH);
+    } else {
+      digitalWrite(LED_BUILTIN, LOW);
+      delay(250);
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(250);
+      digitalWrite(LED_BUILTIN, LOW);
+      delay(250);
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(250);
+    }
+  }
+  Serial.println();
+  Serial.println("closing connection");
+  delay(2000);
+}

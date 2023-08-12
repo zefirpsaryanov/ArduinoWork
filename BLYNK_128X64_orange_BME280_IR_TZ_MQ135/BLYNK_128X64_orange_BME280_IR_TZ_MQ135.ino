@@ -52,6 +52,9 @@ float CO , Alcohol , CO2 , Tolueno , NH4 , Acetona;
 int gasLevel = 0;
 String quality = " ";
 
+unsigned long currentMillis;
+const unsigned long period = 432000000; // 5 days
+
 void setup()
 {
   Serial.begin(9600);
@@ -83,7 +86,10 @@ void setup()
   }
   MQ135.setR0(calcR0 / 10);
   Serial.println("done!");
+
 }
+
+void(* resetFunc)() = 0;
 
 void loop()  // Start of loop
 {
@@ -180,6 +186,10 @@ void loop()  // Start of loop
   Blynk.virtualWrite(V33, Tolueno);
   Blynk.virtualWrite(V34, quality);
   Blynk.virtualWrite(V42, gasLevel);
+
+  currentMillis = millis();
+  if (currentMillis >= period) resetFunc();
+  
 }
 
 void sprintfData()

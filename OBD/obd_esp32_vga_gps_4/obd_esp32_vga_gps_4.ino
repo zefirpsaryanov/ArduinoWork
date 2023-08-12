@@ -20,7 +20,7 @@ TinyGPSPlus gps;
 HardwareSerial SerialGPS(2);
 U8G2_SH1107_64X128_F_HW_I2C u8g2(U8G2_R3, U8X8_PIN_NONE);
 
-int gpsSpeed;
+double gpsSpeed;
 double distance;
 double fuelTMP;
 
@@ -283,8 +283,8 @@ void oledPrint()
   int DD = 10;   //gps.time.day();
   int MMM = 10;  //gps.time.mounth();
   int YY = 2021; //gps.time.year();
-  float oledBattery = bmp.readTemperature();
-  float oledCoolant = bmp.readTemperature() * 9 / 5 + 32 -80;
+//  float oledBattery = bmp.readTemperature();
+//  float oledCoolant = bmp.readTemperature() * 9 / 5 + 32 -80;
   
   String oledTimeToString;
   String oledDateToString;
@@ -349,7 +349,7 @@ void sprintfDataCalcs()
 
   if (gps.speed.isValid())
   {
-    gpsSpeed = (int)gps.speed.kmph();
+    gpsSpeed = (double)gps.speed.kmph();
     distance += gps.speed.kmph();
   }
 

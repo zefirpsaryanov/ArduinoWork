@@ -1,0 +1,177 @@
+/*
+  To upload through terminal you can use: curl -u admin:admin -F "image=@firmware.bin" esp8266-webupdate.local/firmware
+*/
+
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266HTTPUpdateServer.h>
+#include <ezTime.h>
+
+#include <ESP8266mDNS.h>
+const char* host = "bc_rain_o2";
+const char* update_path = "/update";
+const char* update_username = "admin";
+const char* update_password = "admin";
+const char* ssid = "O2";
+const char* password = "1q2w3e4r";
+String station_name = "BC_Rain_O2";
+
+char timeToStr[8];
+
+Timezone myTZ;
+
+#define relayPin14 14  // relay2
+#define relayPin12 12  // relay3
+#define relayPin13 13  // relay4
+
+int startHour = 9;
+int stopHour = 17;
+int raininterval1 = 110000;
+int mistinterval1 = 18000;
+int raininterval2 = 180000;
+int mistinterval2 = 30000;
+
+ESP8266WebServer httpServer(80);
+ESP8266HTTPUpdateServer httpUpdater;
+
+void setup(void) {
+
+  Serial.begin(115200);
+  Serial.println();
+  Serial.print("Booting Sketch ...");
+
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);  // turn the LED off
+  WiFi.hostname(station_name);
+
+  WiFi.begin(ssid, password);
+
+  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    WiFi.begin(ssid, password);
+  }
+  MDNS.begin(host);
+  httpUpdater.setup(&httpServer, update_path, update_username, update_password);
+  httpServer.on("/", handle_OnConnect);
+  httpServer.begin();
+
+  MDNS.addService("http", "tcp", 80);
+
+  waitForSync();
+  myTZ.setLocation(F("Europe/Sofia"));
+
+  pinMode(relayPin14, OUTPUT);
+  pinMode(relayPin12, OUTPUT);
+  pinMode(relayPin13, OUTPUT);
+  digitalWrite(relayPin14, LOW);
+  digitalWrite(relayPin12, LOW);
+  digitalWrite(relayPin13, LOW);
+  Serial.print(" Done");
+  digitalWrite(LED_BUILTIN, LOW);  // turn the LED on
+}
+void handle_OnConnect() {
+
+  httpServer.send(200, "text/html", SendHTML(startHour, stopHour));
+}
+
+String SendHTML(int v1, int v2) {
+
+  String ptr = "<!DOCTYPE html> <html>\n";
+  ptr += "<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
+  ptr += "<meta http-equiv=\"refresh\" content=\"60\">\n";
+  ptr += "<meta name=\"author\" content=\"Zefir\">\n";
+  ptr += "<title>BC_Rain_O2</title>\n";
+  ptr += "<style>html { font-family: Cursive; display: inline-block; margin: 0px auto; text-align: center;}\n";
+  ptr += "body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;}\n";
+  ptr += "p {font-size: 24px;color: #444444;margin-bottom: 10px;}\n";
+  ptr += "</style>\n";
+  ptr += "</head>\n";
+  ptr += "<body>\n";
+  ptr += "<div id=\"webpage\">\n";
+  ptr += "<h1>BC_Rain_O2</h1>\n";
+
+  ptr += "<p>startTime: ";
+  ptr += v1;
+  ptr += "</p>";
+
+  ptr += "<p>stopTime: ";
+  ptr += v2;
+  ptr += "</p>";
+
+  ptr += "<p>Time: ";
+  ptr += timeToStr;
+  ptr += "</p>";
+
+  ptr += "</div>\n";
+  ptr += "</body>\n";
+  ptr += "</html>\n";
+  return ptr;
+}
+
+void loop(void) {
+
+  httpServer.handleClient();
+  MDNS.update();
+
+  mist_relays9_11();
+  mist_relays12_17();
+
+  rain_relay9_11();
+  rain_relay12_17();
+
+  sprintf(timeToStr, "%02d.%02d", myTZ.hour(), minute());    //WWW
+}
+
+void mist_relays9_11() {  // every H from 9-11 for 25 sec
+
+  if (myTZ.hour() >= 9 && myTZ.hour() < 12 && minute() == 0) {
+
+    delay(mistinterval1);
+    digitalWrite(relayPin14, HIGH);
+    delay(mistinterval1);
+    digitalWrite(relayPin14, LOW);
+
+    delay(5000);
+
+    digitalWrite(relayPin12, HIGH);
+    delay(mistinterval1);
+    digitalWrite(relayPin12, LOW);
+    delay(5000);
+  }
+}
+
+void mist_relays12_17() {  // every H from 12-17 for 25 sec
+
+  if (myTZ.hour() >= 12 && myTZ.hour() < 18 && minute() == 0) {
+
+    delay(mistinterval2);
+    digitalWrite(relayPin14, HIGH);
+    delay(mistinterval2);
+    digitalWrite(relayPin14, LOW);
+
+    delay(5000);
+
+    digitalWrite(relayPin12, HIGH);
+    delay(mistinterval2);
+    digitalWrite(relayPin12, LOW);
+    delay(5000);
+  }
+}
+
+void rain_relay9_11() {  // rain every H from 9-11 for 110 sec
+
+  if (myTZ.hour() >= 9 && myTZ.hour() < 12 && minute() == 2) {
+    digitalWrite(relayPin13, HIGH);
+    delay(raininterval1);
+    digitalWrite(relayPin13, LOW);
+  }
+}
+
+void rain_relay12_17() {  // every H from 12-17 for 180 sec
+
+  if (myTZ.hour() >= 12 && myTZ.hour() < 18 && minute() == 2) {
+    digitalWrite(relayPin13, HIGH);
+    delay(raininterval2);
+    digitalWrite(relayPin13, LOW);
+  }
+}
